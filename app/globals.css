@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* Thiết lập các biến CSS tùy chỉnh cho phong cách Giấy da */
+@theme {
+  --color-parchment-light: #fdf8e9;
+  --color-parchment-DEFAULT: #e8d5b5;
+  --color-parchment-dark: #3d2611;
+  --font-serif: "Times New Roman", serif;
+}
+
+/* Các tùy chỉnh giao diện bổ sung */
+@layer base {
+  body {
+    background-color: #e8d5b5;
+    color: #3d2611;
+    font-family: var(--font-serif);
+  }
+}
+
+/* Tinh chỉnh React Flow để đồng bộ với v4 */
+.react-flow__background {
+  background-color: #e8d5b5;
+}
+
+.react-flow__edge-path {
+  stroke: #5d3a1a !important;
+  stroke-width: 2;
+}
+
+.react-flow__controls button {
+  background-color: #fdf8e9 !important;
+  fill: #3d2611 !important;
+  border-bottom: 1px solid #8b5a2b !important;
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}

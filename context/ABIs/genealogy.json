@@ -1,192 +1,646 @@
-{
-    "abi":
 [
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "callerAddress",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "nftAddress",
-				"type": "address"
-			}
-		],
-		"name": "ClanAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "creatorAddress",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "nftAddress",
-				"type": "address"
-			}
-		],
-		"name": "ClanCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "callerAddress",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "nftAddress",
-				"type": "address"
-			}
-		],
-		"name": "ClanRemoved",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "clanId",
-				"type": "address"
-			}
-		],
-		"name": "addClan",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "clanCounter",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "_value",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "clanName",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "clanShortDesc",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "ancestorName",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "ancestorShortDesc",
-				"type": "string"
-			},
-			{
-				"components": [
-					{
-						"internalType": "uint8",
-						"name": "day",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint8",
-						"name": "month",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint16",
-						"name": "year",
-						"type": "uint16"
-					}
-				],
-				"internalType": "struct FamilyTypes.DateInfo",
-				"name": "birthDate",
-				"type": "tuple"
-			},
-			{
-				"components": [
-					{
-						"internalType": "uint8",
-						"name": "day",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint8",
-						"name": "month",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint16",
-						"name": "year",
-						"type": "uint16"
-					}
-				],
-				"internalType": "struct FamilyTypes.DateInfo",
-				"name": "deathDate",
-				"type": "tuple"
-			}
-		],
-		"name": "createClan",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "clanId",
-				"type": "address"
-			}
-		],
-		"name": "getClanOwner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "clanId",
-				"type": "address"
-			}
-		],
-		"name": "removeClan",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	}
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementation_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "callerAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClanAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creatorAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClanCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "proposingClan",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "targetClan",
+        "type": "address"
+      }
+    ],
+    "name": "ClanLinkProposalWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "proposingClan",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "targetClan",
+        "type": "address"
+      }
+    ],
+    "name": "ClanLinkProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clan1",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clan2",
+        "type": "address"
+      }
+    ],
+    "name": "ClanLinkRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clan1",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clan2",
+        "type": "address"
+      }
+    ],
+    "name": "ClanLinked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "callerAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClanPaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "callerAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClanRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "callerAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClanUnpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "addClan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clan1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "clan2",
+        "type": "address"
+      }
+    ],
+    "name": "areClansLinked",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "claimClanRegistration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "clanCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "clanName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "clanShortDesc",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ancestorName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ancestorShortDesc",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "day",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "month",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "year",
+            "type": "uint16"
+          }
+        ],
+        "internalType": "struct FamilyTypes.DateInfo",
+        "name": "birthDate",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "day",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "month",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "year",
+            "type": "uint16"
+          }
+        ],
+        "internalType": "struct FamilyTypes.DateInfo",
+        "name": "deathDate",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "isDeceased",
+        "type": "bool"
+      },
+      {
+        "internalType": "enum FamilyTypes.Sex",
+        "name": "ancestorSex",
+        "type": "uint8"
+      }
+    ],
+    "name": "createClan",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getClan",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getClanOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getLinkedClans",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "implementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proposingClan",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "targetClan",
+        "type": "address"
+      }
+    ],
+    "name": "isClanLinkProposed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "isClanRegistered",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "pauseClan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "myClan",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "targetClan",
+        "type": "address"
+      }
+    ],
+    "name": "proposeClanLink",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "removeClan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "myClan",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "otherClan",
+        "type": "address"
+      }
+    ],
+    "name": "removeClanLink",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "clanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "unpauseClan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "myClan",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "targetClan",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawClanLinkProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]
-}

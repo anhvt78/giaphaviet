@@ -18,6 +18,7 @@ export default function AddSpouseModal({
     personId: person.id,
     name: "",
     shortDesc: "",
+    gender: person?.gender === "male" ? 1 : 0,
     birthDate: "",
     deathDate: "",
   });
@@ -31,15 +32,22 @@ export default function AddSpouseModal({
   // Hàm bóc tách ngày tháng năm linh hoạt
   const parseDateInput = (dateStr) => {
     if (!dateStr || dateStr.trim() === "") return { day: 0, month: 0, year: 0 };
+
     const parts = dateStr.split(/[\/\-.]/);
+    let day = 0, month = 0, year = 0;
+
     if (parts.length === 3) {
-      return {
-        day: parseInt(parts[0]) || 0,
-        month: parseInt(parts[1]) || 0,
-        year: parseInt(parts[2]) || 0,
-      };
+      day   = parseInt(parts[0]) || 0;
+      month = parseInt(parts[1]) || 0;
+      year  = parseInt(parts[2]) || 0;
+    } else {
+      year = parseInt(parts[0]) || 0;
     }
-    return { day: 0, month: 0, year: parseInt(dateStr) || 0 };
+
+    if (year !== 0 && month === 0) month = 1;
+    if (year !== 0 && day   === 0) day   = 1;
+
+    return { day, month, year };
   };
 
   const handleSubmit = async (e) => {
@@ -66,6 +74,7 @@ export default function AddSpouseModal({
       deathDate: isStillAlive
         ? { day: 0, month: 0, year: 0 }
         : parseDateInput(formData.deathDate),
+      isDeceased: !isStillAlive,
     };
 
     addSpouse(
@@ -122,41 +131,42 @@ export default function AddSpouseModal({
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5 font-serif">
-          {/* Hàng 1: Họ tên và Giới tính */}
+          {/* Hàng 1: Họ tên */}
           <div>
-            <div>
-              <label className="block text-xs font-bold text-[#5d3a1a] uppercase tracking-widest mb-1">
-                Họ và Tên
-              </label>
-              <input
-                autoFocus
-                disabled={isProcessing}
-                className="w-full px-4 py-2 bg-[#f4ece1] border border-[#8b5a2b]/40 focus:border-[#3d2611] outline-none text-[#3d2611] transition-all disabled:opacity-50"
-                placeholder="Ví dụ: Nguyễn Thị B"
-                value={formData.name}
-                onChange={(e) => {
-                  setFormData({ ...formData, name: e.target.value });
-                  if (errors.name) setErrors({ ...errors, name: null });
-                }}
-              />
-              {renderError("name")}
-            </div>
-            {/* <div>
-              <label className="block text-xs font-bold text-[#5d3a1a] uppercase tracking-widest mb-1">
-                Giới tính
-              </label>
-              <select
-                disabled={isProcessing}
-                className="w-full px-4 py-2 bg-[#f4ece1] border border-[#8b5a2b]/40 outline-none text-[#3d2611] disabled:opacity-50"
-                value={formData.gender}
-                onChange={(e) =>
-                  setFormData({ ...formData, gender: e.target.value })
-                }
-              >
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-              </select>
-            </div> */}
+            <label className="block text-xs font-bold text-[#5d3a1a] uppercase tracking-widest mb-1">
+              Họ và Tên
+            </label>
+            <input
+              autoFocus
+              disabled={isProcessing}
+              className="w-full px-4 py-2 bg-[#f4ece1] border border-[#8b5a2b]/40 focus:border-[#3d2611] outline-none text-[#3d2611] transition-all disabled:opacity-50"
+              placeholder="Ví dụ: Nguyễn Thị B"
+              value={formData.name}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                if (errors.name) setErrors({ ...errors, name: null });
+              }}
+            />
+            {renderError("name")}
+          </div>
+
+          {/* Giới tính */}
+          <div>
+            <label className="block text-xs font-bold text-[#5d3a1a] uppercase tracking-widest mb-1">
+              Giới tính
+            </label>
+            <select
+              disabled={isProcessing}
+              className="w-full px-4 py-2 bg-[#f4ece1] border border-[#8b5a2b]/40 outline-none text-[#3d2611] disabled:opacity-50"
+              value={formData.gender}
+              onChange={(e) =>
+                setFormData({ ...formData, gender: parseInt(e.target.value) })
+              }
+            >
+              <option value={0}>Nam</option>
+              <option value={1}>Nữ</option>
+              <option value={2}>Không xác định</option>
+            </select>
           </div>
 
           {/* Hàng 2: Ngày sinh và Ngày mất (Gộp chung hàng) */}

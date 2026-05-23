@@ -169,217 +169,156 @@ export default function GenealogyDiagramForm({
   };
 
   return (
-    <div className="w-full h-screen bg-[#e8d5b5] flex overflow-hidden">
-      {/* SIDEBAR BÊN TRÁI */}
-      <div
-        className={`transition-all duration-300 bg-[#3d2611] text-[#f2e2ba] flex flex-col shadow-2xl z-50 ${isSidebarOpen ? "w-64" : "w-0"}`}
-      >
-        <div
-          className={`p-6 flex flex-col h-full ${!isSidebarOpen && "hidden"}`}
-        >
-          <h2 className="text-xl font-bold mb-8 border-b border-[#5d3a1a] pb-2 text-center uppercase tracking-widest">
-            Quản Lý
-          </h2>
+    <div className="w-full h-full bg-[#e8d5b5] flex overflow-hidden font-serif">
 
-          <div className="flex flex-col gap-4 flex-grow">
-            <button
-              onClick={() => setTabIndex(0)}
-              className="flex items-center gap-3 px-4 py-3 bg-[#5d3a1a] hover:bg-[#8b5a2b] transition-colors rounded-md text-sm font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+      {/* ── LEFT SIDEBAR ── */}
+      <div className={`transition-all duration-300 bg-[#1e0f05] text-[#f2e2ba] flex flex-col shadow-2xl z-50 flex-shrink-0 ${isSidebarOpen ? "w-60" : "w-0"}`}>
+        <div className={`flex flex-col h-full ${!isSidebarOpen && "hidden"}`}>
+
+          {/* Sidebar header */}
+          <div className="px-5 py-4 border-b border-[#5d3a1a]/40 flex items-center gap-3">
+            <div className="w-1.5 h-5 bg-[#c4922a]" />
+            <span className="text-[11px] font-bold text-[#c4922a] uppercase tracking-[0.25em]">
+              Công cụ
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1 flex-grow p-3 overflow-y-auto">
+
+            {/* Navigation group */}
+            <div className="mb-1">
+              <p className="text-[9px] font-bold text-[#5a3518] uppercase tracking-[0.25em] px-3 py-2">
+                Điều hướng
+              </p>
+              <button
+                onClick={() => setTabIndex(0)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-[#c4a97a] hover:text-[#f2e2ba] hover:bg-[#3d2611]/60 text-[12px] font-semibold uppercase tracking-wide transition-all"
               >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-              </svg>
-              Xem chi tiết
-            </button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Xem chi tiết
+              </button>
+            </div>
 
+            <div className="h-px bg-[#3d2611]/60 mx-3 mb-1" />
+
+            {/* Display group */}
+            <div className="mb-1">
+              <p className="text-[9px] font-bold text-[#5a3518] uppercase tracking-[0.25em] px-3 py-2">
+                Hiển thị
+              </p>
+              <button
+                onClick={() => setShowFemales(!showFemales)}
+                className="w-full flex items-center justify-between px-3 py-2.5 text-[#c4a97a] hover:text-[#f2e2ba] hover:bg-[#3d2611]/60 text-[12px] font-semibold uppercase tracking-wide transition-all"
+              >
+                <span className="flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    {showFemales
+                      ? <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
+                      : <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>
+                    }
+                  </svg>
+                  {showFemales ? "Hiện nữ giới" : "Ẩn nữ giới"}
+                </span>
+                <div className={`w-8 h-4 rounded-full relative transition-colors ${showFemales ? "bg-[#c4922a]" : "bg-[#3d2611]"}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${showFemales ? "translate-x-4" : "translate-x-0.5"}`} />
+                </div>
+              </button>
+            </div>
+
+            <div className="h-px bg-[#3d2611]/60 mx-3 mb-1" />
+
+            {/* Actions group */}
+            <div className="mb-1">
+              <p className="text-[9px] font-bold text-[#5a3518] uppercase tracking-[0.25em] px-3 py-2">
+                Xuất dữ liệu
+              </p>
+              <button
+                onClick={() => setModalQROpen(true)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-[#c4a97a] hover:text-[#f2e2ba] hover:bg-[#3d2611]/60 text-[12px] font-semibold uppercase tracking-wide transition-all"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                In mã QR
+              </button>
+              <button
+                onClick={exportImage}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-[#c4a97a] hover:text-[#f2e2ba] hover:bg-[#3d2611]/60 text-[12px] font-semibold uppercase tracking-wide transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+                Xuất ảnh gia phả
+              </button>
+            </div>
+
+            {/* Owner actions */}
             {userWalletAddress && (
               <>
-                <button
-                  onClick={() => setModalTransferOwner(true)}
-                  className="flex items-center gap-3 px-4 py-3 bg-[#5d3a1a] hover:bg-[#8b5a2b] transition-colors rounded-md text-sm font-semibold"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
+                <div className="h-px bg-[#3d2611]/60 mx-3 mb-1" />
+                <div>
+                  <p className="text-[9px] font-bold text-[#5a3518] uppercase tracking-[0.25em] px-3 py-2">
+                    Quản lý
+                  </p>
+                  <button
+                    onClick={() => setModalTransferOwner(true)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[#c4a97a] hover:text-[#f2e2ba] hover:bg-[#3d2611]/60 text-[12px] font-semibold uppercase tracking-wide transition-all"
                   >
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                  Chuyển quyền sở hữu
-                </button>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Chuyển quyền sở hữu
+                  </button>
+                </div>
               </>
             )}
 
-            {/* Nút Gạt Ẩn/Hiện Con Gái */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[#5d3a1a] rounded-md text-sm font-semibold">
-              {showFemales ? (
-                <div className="flex items-center gap-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    className="text-orange-400"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
+            {/* Sign in/out — bottom */}
+            <div className="mt-auto pb-2 pt-3 border-t border-[#3d2611]/60">
+              {userWalletAddress ? (
+                <button
+                  onClick={() => { dispatch(userSignOut()); router.push("/"); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-red-400/70 hover:text-red-300 hover:bg-red-900/20 text-[12px] font-semibold uppercase tracking-wide transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
                   </svg>
-                  <span>Hiện nữ giới</span>
-                </div>
+                  Đăng xuất
+                </button>
               ) : (
-                <div className="flex items-center gap-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    className="opacity-50"
-                  >
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                <button
+                  onClick={() => setIsShowModalConnector(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-900/20 text-[12px] font-semibold uppercase tracking-wide transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
                   </svg>
-                  <span>Ẩn nữ giới</span>
-                </div>
+                  Đăng nhập
+                </button>
               )}
-
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={showFemales}
-                  onChange={() => setShowFemales(!showFemales)}
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-              </label>
             </div>
-
-            <button
-              onClick={() => setModalQROpen(true)}
-              className="flex items-center gap-3 px-4 py-3 bg-[#5d3a1a] hover:bg-[#8b5a2b] transition-colors rounded-md text-sm font-semibold"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <polyline points="6 9 6 2 18 2 18 9" />
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                <rect x="6" y="14" width="12" height="8" />
-              </svg>
-              In mã QR
-            </button>
-
-            <button
-              onClick={exportImage}
-              className="flex items-center gap-3 px-4 py-3 bg-[#5d3a1a] hover:bg-[#8b5a2b] transition-colors rounded-md text-sm font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              Xuất ảnh gia phả
-            </button>
-
-            {userWalletAddress ? (
-              <button
-                onClick={() => {
-                  dispatch(userSignOut());
-                  router.push("/");
-                }}
-                className="flex items-center gap-3 px-4 py-3 bg-red-900/40 hover:bg-red-800 transition-colors rounded-md text-sm font-semibold text-red-200 mt-auto mb-4"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-                </svg>
-                Đăng xuất
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsShowModalConnector(true)}
-                className="flex items-center gap-3 px-4 py-3 bg-green-900/40 hover:bg-green-800 transition-colors rounded-md text-sm font-semibold text-green-200 mt-auto mb-4"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" />
-                </svg>
-                Đăng nhập
-              </button>
-            )}
           </div>
         </div>
       </div>
 
-      {/* NÚT ĐÓNG/MỞ SIDEBAR */}
+      {/* ── SIDEBAR TOGGLE BUTTON ── */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed left-4 top-4 z-[60] p-2 bg-[#5d3a1a] text-[#f2e2ba] rounded-full shadow-md hover:bg-[#8b5a2b] transition-all"
+        className="fixed left-3 top-[calc(50%-20px)] z-[60] w-5 h-10 bg-[#3d2611] text-[#c4922a] hover:bg-[#5d3a1a] shadow-lg transition-all flex items-center justify-center"
+        title={isSidebarOpen ? "Đóng menu" : "Mở menu"}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d={
-              isSidebarOpen
-                ? "M19 12H5M12 19l-7-7 7-7"
-                : "M4 12h14M12 5l7 7-7 7"
-            }
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+          <path d={isSidebarOpen ? "M15 18l-6-6 6-6" : "M9 18l6-6-6-6"} />
         </svg>
       </button>
 

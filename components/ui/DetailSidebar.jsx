@@ -604,6 +604,17 @@ export default function DetailSidebar({
                       </p>
                     </div>
                   </div>
+                  <div className="mt-3">
+                    <span
+                      className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${
+                        person.isDeceased
+                          ? "bg-stone-200 text-stone-600 border-stone-400"
+                          : "bg-green-50 text-green-700 border-green-300"
+                      }`}
+                    >
+                      {person.isDeceased ? "Đã qua đời" : "Còn sống"}
+                    </span>
+                  </div>
                 </section>
 
                 {person.shortDesc && (

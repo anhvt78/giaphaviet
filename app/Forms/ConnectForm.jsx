@@ -5,8 +5,6 @@ import { setWalletAddress } from "@/redux/genealogySlide";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
-import { createWalletClient, custom } from "viem";
-import { lukso } from "viem/chains";
 
 const LUKSO_MAINNET_ID = 42;
 
@@ -100,27 +98,15 @@ export default function ConnectForm() {
   };
 
   const handleOpenApp = () => {
-    // 1. Lấy URL hiện tại (bao gồm cả giao thức https://)
     const currentUrl = window.location.href;
-
-    // 2. Sử dụng URL Scheme trực tiếp của app Universal Profiles (up://)
-    // Cách này sẽ ép điện thoại mở app ngay lập tức mà không cần qua server trung gian
     const appSchemeUrl = `up://view?url=${encodeURIComponent(currentUrl)}`;
-
-    // Thực thi mở app
     window.location.href = appSchemeUrl;
-
-    // 3. Fallback: Nếu sau 2.5 giây người dùng vẫn ở trình duyệt (nghĩa là chưa cài app)
-    // thì mới dẫn họ tới Store.
     setTimeout(() => {
       if (document.visibilityState === "visible") {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const androidUrl =
-          "https://play.google.com/store/apps/details?id=io.universaleverything.universalprofiles";
-        const iosUrl =
-          "https://apps.apple.com/us/app/universal-profiles/id6702018631";
-
-        window.location.href = isIOS ? iosUrl : androidUrl;
+        window.location.href = isIOS
+          ? "https://apps.apple.com/us/app/universal-profiles/id6702018631"
+          : "https://play.google.com/store/apps/details?id=io.universaleverything.universalprofiles";
       }
     }, 2500);
   };
@@ -130,16 +116,10 @@ export default function ConnectForm() {
     try {
       const provider = detectInjectedProvider();
       if (!provider) throw new Error("NO_PROVIDER");
-      const accounts = await provider.request({
-        method: "eth_requestAccounts",
-      });
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
       dispatch(setWalletAddress(accounts[0]));
     } catch (error) {
-      Swal.fire({
-        title: "Lỗi",
-        text: "Không thể kết nối. Hãy thử lại trong ứng dụng.",
-        icon: "error",
-      });
+      Swal.fire({ title: "Lỗi", text: "Không thể kết nối. Hãy thử lại trong ứng dụng.", icon: "error" });
     } finally {
       setIsProcessing(false);
     }
@@ -153,11 +133,7 @@ export default function ConnectForm() {
       const accounts = await upProvider.request({ method: "eth_accounts" });
       dispatch(setWalletAddress(accounts[0]));
     } catch (error) {
-      Swal.fire({
-        title: "Lỗi",
-        text: "Lỗi kết nối trong môi trường Grid.",
-        icon: "error",
-      });
+      Swal.fire({ title: "Lỗi", text: "Lỗi kết nối trong môi trường Grid.", icon: "error" });
     } finally {
       setIsProcessing(false);
     }
@@ -213,114 +189,194 @@ export default function ConnectForm() {
   }, [isScanning, isMobile]);
 
   return (
-    <div className="w-full h-screen bg-[#e8d5b5] flex overflow-hidden">
-      <div className="absolute inset-0 z-[100] flex items-center justify-center bg-[#3d2611]/70 backdrop-blur-md">
-        <div className="bg-[#f2e2ba] p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-b-2 border-[#5d3a1a] w-full max-w-md text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="p-3 bg-[#5d3a1a] rounded-full shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
-                fill="#f2e2ba"
-                viewBox="0 0 256 256"
-              >
-                <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z"></path>
-                <path d="M128,80a12,12,0,1,0,12,12A12,12,0,0,0,128,80Zm0,96a8,8,0,0,0,8-8V128a8,8,0,0,0-16,0v40A8,8,0,0,0,128,176Z"></path>
+    <div className="min-h-screen flex flex-col md:flex-row font-serif overflow-hidden">
+
+      {/* ── LEFT HERO PANEL ── */}
+      <div className="hidden md:flex md:w-[45%] relative flex-col justify-between bg-[#1e0f05] overflow-hidden px-12 py-10">
+
+        {/* Background geometric pattern */}
+        <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <pattern id="heroPattern" x="0" y="0" width="56" height="56" patternUnits="userSpaceOnUse">
+              <path d="M28 4 L52 28 L28 52 L4 28 Z" fill="none" stroke="#c4922a" strokeWidth="0.5" opacity="0.15"/>
+              <circle cx="28" cy="28" r="2.5" fill="#c4922a" opacity="0.12"/>
+              <circle cx="0" cy="0" r="1.5" fill="#c4922a" opacity="0.08"/>
+              <circle cx="56" cy="0" r="1.5" fill="#c4922a" opacity="0.08"/>
+              <circle cx="0" cy="56" r="1.5" fill="#c4922a" opacity="0.08"/>
+              <circle cx="56" cy="56" r="1.5" fill="#c4922a" opacity="0.08"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#heroPattern)"/>
+        </svg>
+
+        {/* Vertical gold accent stripe */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#c4922a] to-transparent opacity-60" />
+
+        {/* TOP: Logo */}
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-14">
+            <div className="w-9 h-9 rounded-full border-2 border-[#c4922a] flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4922a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
+            <span className="text-[#c4922a] font-bold uppercase tracking-[0.28em] text-[13px]">
+              Gia Phả Việt
+            </span>
           </div>
 
-          <h3 className="text-[#3d2611] text-xl font-black mb-2 uppercase tracking-widest">
-            Truy cập gia phả
-          </h3>
-          <p className="text-[#5d3a1a] mb-6 text-sm opacity-80">
-            Nhập mã định danh, quét mã QR hoặc kết nối ví.
+          <h1 className="text-[2.8rem] font-black text-[#f2e2ba] leading-[1.18] mb-6 tracking-tight">
+            Lưu giữ<br />
+            huyết mạch<br />
+            <span className="text-[#c4922a]">dòng tộc.</span>
+          </h1>
+
+          <p className="text-[#8b6045] text-[15px] leading-relaxed max-w-xs">
+            Nền tảng gia phả blockchain đầu tiên tại Việt Nam — ghi chép, lưu truyền và bảo tồn lịch sử dòng họ vĩnh viễn.
           </p>
+        </div>
 
-          <div className="space-y-4">
-            <div className="relative">
-              <input
-                type="text"
-                value={inputClanId}
-                onChange={(e) => setInputClanId(e.target.value)}
-                placeholder="Nhập địa chỉ dòng họ (0x...)"
-                className="w-full px-4 py-3 bg-[#e8d5b5]/50 border-2 border-[#5d3a1a]/20 rounded-lg text-[#3d2611] text-sm focus:border-[#5d3a1a] outline-none"
-              />
-              <button
-                onClick={handleAccessById}
-                className="absolute right-2 top-1.5 px-3 py-1.5 bg-[#5d3a1a] text-[#f2e2ba] rounded-md text-xs font-bold"
-              >
-                TRUY CẬP
-              </button>
+        {/* BOTTOM: Tagline + LUKSO badge */}
+        <div className="relative">
+          <div className="border-l-2 border-[#c4922a]/40 pl-5 mb-8">
+            <p className="text-[#f2e2ba]/40 italic text-base leading-relaxed">
+              "Cây có cội,<br />nước có nguồn."
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-3.5 h-3.5 rounded-full bg-[#FE005B]" />
+            <span className="text-[#5a3a20] text-[11px] uppercase tracking-[0.22em] font-bold">
+              Powered by LUKSO Mainnet
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT FORM PANEL ── */}
+      <div className="flex-1 flex flex-col justify-center items-center bg-[#fdf8e9] px-6 py-12 relative overflow-y-auto">
+
+        {/* Subtle top edge line */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#c4922a]/40 to-transparent md:hidden" />
+
+        {/* Mobile-only branding */}
+        <div className="md:hidden mb-10 text-center">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full border-2 border-[#3d2611] flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3d2611" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <span className="text-[#3d2611] font-bold uppercase tracking-[0.28em] text-lg">Gia Phả Việt</span>
+          <p className="text-[#8b5a2b] text-xs italic mt-1">Cây có cội, nước có nguồn</p>
+        </div>
+
+        <div className="w-full max-w-[340px]">
+
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-[1.6rem] font-black text-[#3d2611] uppercase tracking-[0.15em] mb-2">
+              Truy cập gia phả
+            </h2>
+            <p className="text-[#8b5a2b] text-sm leading-relaxed">
+              Nhập mã định danh, quét mã QR hoặc kết nối ví Universal Profile.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+
+            {/* Address input */}
+            <div>
+              <label className="block text-[11px] font-bold text-[#5d3a1a] uppercase tracking-[0.18em] mb-2">
+                Địa chỉ gia tộc
+              </label>
+              <div className="flex">
+                <input
+                  type="text"
+                  value={inputClanId}
+                  onChange={(e) => setInputClanId(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAccessById()}
+                  placeholder="0x..."
+                  className="flex-1 px-4 py-3 bg-white border-2 border-[#8b5a2b]/30 border-r-0 focus:border-[#3d2611] outline-none text-[#3d2611] text-sm font-mono tracking-tight transition-all placeholder:text-[#8b5a2b]/35"
+                />
+                <button
+                  onClick={handleAccessById}
+                  className="px-5 py-3 bg-[#3d2611] text-[#f2e2ba] text-[11px] font-black uppercase tracking-[0.18em] hover:bg-[#5d3a1a] active:scale-95 transition-all border-2 border-[#3d2611]"
+                >
+                  Vào
+                </button>
+              </div>
             </div>
 
+            {/* Divider */}
             <div className="flex items-center gap-3 py-1">
-              <div className="h-[1px] bg-[#5d3a1a]/20 flex-grow"></div>
-              <span className="text-[10px] font-bold text-[#5d3a1a]/40 uppercase">
-                Hoặc
-              </span>
-              <div className="h-[1px] bg-[#5d3a1a]/20 flex-grow"></div>
+              <div className="h-px bg-[#5d3a1a]/15 flex-1" />
+              <span className="text-[10px] font-black text-[#8b5a2b]/40 uppercase tracking-widest">Hoặc</span>
+              <div className="h-px bg-[#5d3a1a]/15 flex-1" />
             </div>
 
+            {/* Action buttons */}
             <div className="grid grid-cols-2 gap-3">
+
+              {/* QR Scan */}
               <button
                 onClick={handleScanButtonClick}
-                className={`flex flex-col items-center gap-2 p-3 border-2 rounded-xl transition-all ${isMobile ? "border-[#5d3a1a]/20 text-[#5d3a1a]" : "opacity-50 cursor-not-allowed"}`}
+                disabled={!isMobile}
+                className={`flex flex-col items-center gap-2.5 px-4 py-4 border-2 font-bold text-[11px] uppercase tracking-wider transition-all ${
+                  isMobile
+                    ? "border-[#5d3a1a]/30 text-[#5d3a1a] hover:border-[#5d3a1a] hover:bg-[#5d3a1a]/5 active:scale-95"
+                    : "border-[#5d3a1a]/10 text-[#5d3a1a]/25 cursor-not-allowed"
+                }`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 256 256"
-                >
-                  <path d="M224,144v48a16,16,0,0,1-16,16H160a8,8,0,0,1,0-16h48V144a8,8,0,0,1,16,0ZM96,208H48V160a8,8,0,0,0-16,0v48a16,16,0,0,0,16,16H96a8,8,0,0,0,0-16ZM208,32H160a8,8,0,0,0,0,16h48V96a8,8,0,0,0,16,0V48A16,16,0,0,0,208,32ZM48,96a8,8,0,0,0,16,0V48H96a8,8,0,0,0,0-16H48A16,16,0,0,0,32,48V96Z"></path>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256">
+                  <path d="M224,144v48a16,16,0,0,1-16,16H160a8,8,0,0,1,0-16h48V144a8,8,0,0,1,16,0ZM96,208H48V160a8,8,0,0,0-16,0v48a16,16,0,0,0,16,16H96a8,8,0,0,0,0-16ZM208,32H160a8,8,0,0,0,0,16h48V96a8,8,0,0,0,16,0V48A16,16,0,0,0,208,32ZM48,96a8,8,0,0,0,16,0V48H96a8,8,0,0,0,0-16H48A16,16,0,0,0,32,48V96Z"/>
                 </svg>
-                <span className="text-[10px] font-bold uppercase">Quét QR</span>
+                <span>Quét QR</span>
               </button>
 
+              {/* Wallet connect */}
               <button
                 onClick={connectWalletHandler}
                 disabled={isProcessing}
-                className="flex flex-col items-center gap-2 p-3 border-2 border-[#5d3a1a]/20 text-[#5d3a1a] rounded-xl hover:border-[#5d3a1a]"
+                className="flex flex-col items-center gap-2.5 px-4 py-4 bg-[#3d2611] text-[#f2e2ba] border-2 border-[#3d2611] font-bold text-[11px] uppercase tracking-wider hover:bg-[#5d3a1a] hover:border-[#5d3a1a] active:scale-95 transition-all disabled:opacity-60"
               >
                 {isProcessing ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5d3a1a]"></div>
+                  <div className="animate-spin rounded-full h-[22px] w-[22px] border-2 border-[#f2e2ba]/30 border-t-[#f2e2ba]" />
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="currentColor"
-                    viewBox="0 0 256 256"
-                  >
-                    <path d="M216,72H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,64V192a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72Zm0,128H56a8,8,0,0,1-8-8V85.38A23.83,23.83,0,0,0,56,88H216v40H184a24,24,0,0,0,0,48h32v24Zm0-48H184a8,8,0,0,1,0-16h32Z"></path>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256">
+                    <path d="M216,72H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,64V192a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72Zm0,128H56a8,8,0,0,1-8-8V85.38A23.83,23.83,0,0,0,56,88H216v40H184a24,24,0,0,0,0,48h32v24Zm0-48H184a8,8,0,0,1,0-16h32Z"/>
                   </svg>
                 )}
-                <span className="text-[10px] font-bold uppercase">
-                  Kết nối Ví
-                </span>
+                <span>Kết nối ví</span>
               </button>
             </div>
           </div>
 
+          {/* QR Scanner */}
           {isScanning && (
-            <div className="mt-4 relative bg-[#1a1007] rounded-lg border-2 border-[#5d3a1a] overflow-hidden">
+            <div className="mt-5 relative bg-[#1a1007] border-2 border-[#5d3a1a] overflow-hidden">
               <button
                 onClick={() => setIsScanning(false)}
-                className="absolute top-2 right-2 z-50 bg-red-500 text-white p-1 rounded-full"
+                className="absolute top-2 right-2 z-50 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors"
               >
-                X
+                ✕
               </button>
-              <div id="reader" className="w-full"></div>
+              <div id="reader" className="w-full" />
             </div>
           )}
 
-          <div className="mt-8 pt-6 border-t border-[#5d3a1a]/10">
-            <p className="text-[10px] text-[#5d3a1a]/50 uppercase font-black">
-              Bảo mật • Minh bạch • Vĩnh viễn
-            </p>
+          {/* Footer */}
+          <div className="mt-10 pt-6 border-t border-[#8b5a2b]/15 flex items-center justify-center gap-5">
+            {["Bảo mật", "Minh bạch", "Vĩnh viễn"].map((label, i) => (
+              <React.Fragment key={label}>
+                {i > 0 && <span className="w-1 h-1 rounded-full bg-[#8b5a2b]/20" />}
+                <span className="text-[10px] text-[#8b5a2b]/40 uppercase font-black tracking-wider">{label}</span>
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>

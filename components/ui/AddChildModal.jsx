@@ -32,16 +32,22 @@ export default function AddChildModal({
   // Hàm bóc tách ngày tháng năm từ chuỗi nhập vào giống ClanListForm
   const parseDateInput = (dateStr) => {
     if (!dateStr || dateStr.trim() === "") return { day: 0, month: 0, year: 0 };
+
     const parts = dateStr.split(/[\/\-.]/);
+    let day = 0, month = 0, year = 0;
+
     if (parts.length === 3) {
-      return {
-        day: parseInt(parts[0]) || 0,
-        month: parseInt(parts[1]) || 0,
-        year: parseInt(parts[2]) || 0,
-      };
+      day   = parseInt(parts[0]) || 0;
+      month = parseInt(parts[1]) || 0;
+      year  = parseInt(parts[2]) || 0;
+    } else {
+      year = parseInt(parts[0]) || 0;
     }
-    // Nếu chỉ nhập 1 phần thì mặc định là năm
-    return { day: 0, month: 0, year: parseInt(dateStr) || 0 };
+
+    if (year !== 0 && month === 0) month = 1;
+    if (year !== 0 && day   === 0) day   = 1;
+
+    return { day, month, year };
   };
 
   const handleSubmit = async (e) => {
@@ -68,6 +74,7 @@ export default function AddChildModal({
       deathDate: isStillAlive
         ? { day: 0, month: 0, year: 0 }
         : parseDateInput(formData.deathDate),
+      isDeceased: !isStillAlive,
     };
 
     // console.log(

@@ -13,7 +13,7 @@ export default function UpdateMemberModal({
   fetchDataDialog,
 }) {
   const [isStillAlive, setIsStillAlive] = useState(
-    person?.deathDate?.year === 0,
+    person?.isDeceased === false || person?.deathDate?.year === 0,
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,23 +34,24 @@ export default function UpdateMemberModal({
   );
 
   const parseDateInput = (dateStr) => {
-    console.log("dateStr: ", dateStr);
-
-    // Ép kiểu về string và kiểm tra nếu không phải chuỗi hợp lệ
     const str = String(dateStr || "").trim();
     if (!str || str === "0/0/0") return { day: 0, month: 0, year: 0 };
 
     const parts = str.split(/[\/\-.]/);
+    let day = 0, month = 0, year = 0;
+
     if (parts.length === 3) {
-      return {
-        day: parseInt(parts[0]) || 0,
-        month: parseInt(parts[1]) || 0,
-        year: parseInt(parts[2]) || 0,
-      };
+      day   = parseInt(parts[0]) || 0;
+      month = parseInt(parts[1]) || 0;
+      year  = parseInt(parts[2]) || 0;
+    } else {
+      year = parseInt(parts[0]) || 0;
     }
-    // Nếu chỉ nhập năm hoặc dữ liệu không đủ 3 phần
-    const yearOnly = parseInt(str.split(/[\/\-.]/).pop());
-    return { day: 0, month: 0, year: yearOnly || 0 };
+
+    if (year !== 0 && month === 0) month = 1;
+    if (year !== 0 && day   === 0) day   = 1;
+
+    return { day, month, year };
   };
 
   const handleSubmit = async (e) => {
@@ -75,6 +76,7 @@ export default function UpdateMemberModal({
       deathDate: isStillAlive
         ? { day: 0, month: 0, year: 0 }
         : parseDateInput(formData.deathDate),
+      isDeceased: !isStillAlive,
     };
 
     updatePersonData(

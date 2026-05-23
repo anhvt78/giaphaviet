@@ -251,26 +251,49 @@ export const GenealogyProvider = ({ children }) => {
 
   const createClan = async (walletAddress, formData, callBack, handleErr) => {
     try {
-      console.log("formData: ", formData);
-
-      const contract = await connectingWithSmartContract(
-        genealogyAddress,
-        genealogyABI,
-      );
-
-      const publicClient = createPublicClient({
-        chain: lukso,
-        transport: http(RPC_URL),
-      });
-
-      const txHash = await contract.write.createClan([
+      const clanArgs = [
         formData.clanName,
         formData.description,
         formData.ancestorName,
         formData.ancestorDesc,
         formData.birthDate,
         formData.deathDate,
-      ]);
+        formData.isDeceased,
+        formData.ancestorSex,
+      ];
+      console.log("createClan args:", JSON.stringify(clanArgs, null, 2));
+
+      const publicClient = createPublicClient({
+        chain: lukso,
+        transport: http(RPC_URL),
+      });
+
+      // Simulate trước để bắt revert reason rõ ràng
+      try {
+        await publicClient.simulateContract({
+          address: genealogyAddress,
+          abi: genealogyABI,
+          functionName: "createClan",
+          args: clanArgs,
+          account: walletAddress,
+        });
+      } catch (simErr) {
+        const reason =
+          simErr?.cause?.reason ||
+          simErr?.shortMessage ||
+          simErr?.message ||
+          "Giao dịch sẽ thất bại";
+        console.error("Simulation revert:", simErr);
+        handleErr("Lỗi tham số hợp đồng", reason);
+        return;
+      }
+
+      const contract = await connectingWithSmartContract(
+        genealogyAddress,
+        genealogyABI,
+      );
+
+      const txHash = await contract.write.createClan(clanArgs);
 
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash,
@@ -294,13 +317,18 @@ export const GenealogyProvider = ({ children }) => {
       );
 
       if (event) {
-        // FIX: Đổi event.args.clanId → event.args.nftAddress (đúng tên trong contract)
-        callBack(event.args.nftAddress);
+        callBack(event.args.clanAddress);
       } else {
         handleErr("Event not found", "ClanCreated event not found in receipt");
       }
     } catch (error) {
-      handleErr("Error", error);
+      const msg =
+        error?.cause?.reason ||
+        error?.shortMessage ||
+        error?.message ||
+        String(error);
+      console.error("createClan error:", error);
+      handleErr("Lỗi khởi tạo gia phả", msg);
     }
   };
 
@@ -375,6 +403,7 @@ export const GenealogyProvider = ({ children }) => {
         formData.gender,
         formData.birthDate,
         formData.deathDate,
+        formData.isDeceased,
       ]);
 
       const receipt = await publicClient.waitForTransactionReceipt({
@@ -520,8 +549,10 @@ export const GenealogyProvider = ({ children }) => {
         formData.personId,
         formData.name,
         formData.shortDesc,
+        formData.gender,
         formData.birthDate,
         formData.deathDate,
+        formData.isDeceased,
       ]);
 
       const receipt = await publicClient.waitForTransactionReceipt({
@@ -573,6 +604,7 @@ export const GenealogyProvider = ({ children }) => {
         formData.shortDesc,
         formData.birthDate,
         formData.deathDate,
+        formData.isDeceased,
       ]);
 
       const receipt = await publicClient.waitForTransactionReceipt({

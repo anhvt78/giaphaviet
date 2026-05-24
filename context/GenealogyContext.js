@@ -9,7 +9,6 @@ import {
   getContract,
   parseEventLogs,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { lukso } from "viem/chains";
 
 import { ERC725 } from "@erc725/erc725.js";
@@ -19,8 +18,6 @@ import lsp4Schema from "@erc725/erc725.js/schemas/LSP4DigitalAsset.json";
 import { ERC725YDataKeys } from "@lukso/lsp-smart-contracts";
 
 import { generateMetadataLink } from "@/components/Utils/helpers";
-
-const privateKey = `${process.env.PRIVATE_KEY}`;
 
 const RPC_URL = "https://rpc.mainnet.lukso.network"; // RPC URL cho LUKSO Testnet
 
@@ -60,36 +57,19 @@ const connectingWithSmartContract = async (smAddr, smABI) => {
   return contract;
 };
 
-// Kết nối qua private key (read/write không cần user ký) — dùng cho các hàm đọc dữ liệu
-const connectingSmartContractByPrivatekey = (contractAddress, contractABI) => {
-  try {
-    const account = privateKeyToAccount(
-      privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`,
-    );
-
-    const publicClient = createPublicClient({
-      chain: lukso,
-      transport: http(RPC_URL),
-    });
-
-    const walletClient = createWalletClient({
-      account,
-      chain: lukso,
-      transport: http(RPC_URL),
-    });
-
-    const contract = getContract({
-      address: contractAddress,
-      abi: contractABI,
-      client: { public: publicClient, wallet: walletClient },
-    });
-
-    return contract;
-  } catch (error) {
-    console.error("Error connecting to smart contract:", error);
-    throw error;
-  }
+// Kết nối chỉ đọc — không cần private key, dùng cho contract.read.*
+const connectReadOnlyContract = (contractAddress, contractABI) => {
+  const publicClient = createPublicClient({
+    chain: lukso,
+    transport: http(RPC_URL),
+  });
+  return getContract({
+    address: contractAddress,
+    abi: contractABI,
+    client: publicClient,
+  });
 };
+
 
 const fetchContractData = async (contractAddress, lspSchema, dataType) => {
   try {
@@ -128,7 +108,7 @@ export const GenealogyProvider = ({ children }) => {
 
   const getClanDetail = async (clanId) => {
     try {
-      const contract = connectingSmartContractByPrivatekey(
+      const contract = connectReadOnlyContract(
         clanId,
         familyNftABI,
       );
@@ -166,7 +146,7 @@ export const GenealogyProvider = ({ children }) => {
 
   const getPersonData = async (clanId, personId) => {
     try {
-      const contract = connectingSmartContractByPrivatekey(
+      const contract = connectReadOnlyContract(
         clanId,
         familyNftABI,
       );
@@ -184,7 +164,7 @@ export const GenealogyProvider = ({ children }) => {
 
   const getPersonDetail = async (clanId, personId) => {
     try {
-      const contract = connectingSmartContractByPrivatekey(
+      const contract = connectReadOnlyContract(
         clanId,
         familyNftABI,
       );
@@ -232,7 +212,7 @@ export const GenealogyProvider = ({ children }) => {
 
   const getOwner = async (clanId, personId) => {
     try {
-      const familyNFTContract = connectingSmartContractByPrivatekey(
+      const familyNFTContract = connectReadOnlyContract(
         clanId,
         familyNftABI,
       );
@@ -640,6 +620,251 @@ export const GenealogyProvider = ({ children }) => {
     }
   };
 
+  const linkSpouses = async (walletAddress, clanId, personId1, personId2, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.linkSpouses([personId1, personId2]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi liên kết vợ chồng", msg);
+    }
+  };
+
+  const addExternalSpouse = async (walletAddress, clanId, personId, externalClanAddress, externalPersonId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.addExternalSpouse([personId, externalClanAddress, externalPersonId]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      const logs = parseEventLogs({ abi: familyNftABI, eventName: "ExternalSpouseAdded", logs: receipt.logs });
+      const event = logs.find(l => l.args.sender?.toLowerCase() === walletAddress.toLowerCase());
+      if (event) callBack();
+      else handleErr("Event not found", "ExternalSpouseAdded event not found in receipt");
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi thêm phối ngẫu xuyên clan", msg);
+    }
+  };
+
+  const removeExternalSpouse = async (walletAddress, clanId, personId, externalClanAddress, externalPersonId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.removeExternalSpouse([personId, externalClanAddress, externalPersonId]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      const logs = parseEventLogs({ abi: familyNftABI, eventName: "ExternalSpouseRemoved", logs: receipt.logs });
+      const event = logs.find(l => l.args.sender?.toLowerCase() === walletAddress.toLowerCase());
+      if (event) callBack();
+      else handleErr("Event not found", "ExternalSpouseRemoved event not found in receipt");
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi xóa phối ngẫu xuyên clan", msg);
+    }
+  };
+
+  const importPerson = async (walletAddress, clanId, formData, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.importPerson([
+        formData.name, formData.shortDesc, formData.sex,
+        formData.birthDate, formData.deathDate, formData.isDeceased,
+        formData.srcClanAddress, formData.srcPersonId,
+      ]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      const logs = parseEventLogs({ abi: familyNftABI, eventName: "PersonImported", logs: receipt.logs });
+      const event = logs.find(l => l.args.sender?.toLowerCase() === walletAddress.toLowerCase());
+      if (event) callBack(event.args.newPersonId);
+      else handleErr("Event not found", "PersonImported event not found in receipt");
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi nhập thành viên", msg);
+    }
+  };
+
+  const linkSamePerson = async (walletAddress, clanId, localPersonId, otherClanAddress, otherPersonId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.linkSamePerson([localPersonId, otherClanAddress, otherPersonId]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi liên kết cùng người", msg);
+    }
+  };
+
+  const unlinkSamePerson = async (walletAddress, clanId, localPersonId, otherClanAddress, otherPersonId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.unlinkSamePerson([localPersonId, otherClanAddress, otherPersonId]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi xóa liên kết cùng người", msg);
+    }
+  };
+
+  const personExists = async (clanId, personId) => {
+    try {
+      const contract = connectReadOnlyContract(clanId, familyNftABI);
+      const exists = await contract.read.personExists([personId]);
+      return { sts: true, data: exists };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const getPersonOrigin = async (clanId, personId) => {
+    try {
+      const contract = connectReadOnlyContract(clanId, familyNftABI);
+      const origin = await contract.read.getPersonOrigin([personId]);
+      return { sts: true, data: origin };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const getEquivalents = async (clanId, personId) => {
+    try {
+      const contract = connectReadOnlyContract(clanId, familyNftABI);
+      const refs = await contract.read.getEquivalents([personId]);
+      return { sts: true, data: refs };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const pauseClan = async (walletAddress, clanId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.pause([]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi tạm dừng gia phả", msg);
+    }
+  };
+
+  const unpauseClan = async (walletAddress, clanId, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(clanId, familyNftABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.unpause([]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi mở lại gia phả", msg);
+    }
+  };
+
+  const getClanCount = async () => {
+    try {
+      const contract = connectReadOnlyContract(genealogyAddress, genealogyABI);
+      const count = await contract.read.clanCount();
+      return { sts: true, data: count };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const isClanRegistered = async (clanAddress) => {
+    try {
+      const contract = connectReadOnlyContract(genealogyAddress, genealogyABI);
+      const ok = await contract.read.isClanRegistered([clanAddress]);
+      return { sts: true, data: ok };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const proposeClanLink = async (walletAddress, myClanAddress, targetClanAddress, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(genealogyAddress, genealogyABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.proposeClanLink([myClanAddress, targetClanAddress]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi đề xuất liên kết gia phả", msg);
+    }
+  };
+
+  const areClansLinked = async (clan1, clan2) => {
+    try {
+      const contract = connectReadOnlyContract(genealogyAddress, genealogyABI);
+      const linked = await contract.read.areClansLinked([clan1, clan2]);
+      return { sts: true, data: linked };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const isClanLinkProposed = async (clan1, clan2) => {
+    try {
+      const contract = connectReadOnlyContract(genealogyAddress, genealogyABI);
+      const proposed = await contract.read.isClanLinkProposed([clan1, clan2]);
+      return { sts: true, data: proposed };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const getLinkedClans = async (clanAddress) => {
+    try {
+      const contract = connectReadOnlyContract(genealogyAddress, genealogyABI);
+      const clans = await contract.read.getLinkedClans([clanAddress]);
+      return { sts: true, data: clans };
+    } catch (error) { return { sts: false, data: error }; }
+  };
+
+  const withdrawClanLinkProposal = async (walletAddress, myClan, targetClan, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(genealogyAddress, genealogyABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.withdrawClanLinkProposal([myClan, targetClan]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi rút đề xuất liên kết", msg);
+    }
+  };
+
+  const removeClanLink = async (walletAddress, myClan, otherClan, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(genealogyAddress, genealogyABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.removeClanLink([myClan, otherClan]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi xóa liên kết gia phả", msg);
+    }
+  };
+
+  const claimClanRegistration = async (walletAddress, clanAddress, callBack, handleErr) => {
+    try {
+      const contract = await connectingWithSmartContract(genealogyAddress, genealogyABI);
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const txHash = await contract.write.claimClanRegistration([clanAddress]);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") { handleErr("Transaction reverted", receipt); return; }
+      callBack();
+    } catch (error) {
+      const msg = error?.cause?.reason || error?.shortMessage || error?.message || String(error);
+      handleErr("Lỗi nhận quyền đăng ký clan", msg);
+    }
+  };
+
   const transferOwnership = async (
     walletAddress,
     clanId,
@@ -740,7 +965,7 @@ export const GenealogyProvider = ({ children }) => {
         "LSP5ReceivedAssets[]",
       );
 
-      const nftContract = connectingSmartContractByPrivatekey(
+      const nftContract = connectReadOnlyContract(
         genealogyAddress,
         genealogyABI,
       );
@@ -782,7 +1007,26 @@ export const GenealogyProvider = ({ children }) => {
         addSpouse,
         removeSpouse,
         updatePersonData,
-
+        linkSpouses,
+        addExternalSpouse,
+        removeExternalSpouse,
+        importPerson,
+        linkSamePerson,
+        unlinkSamePerson,
+        personExists,
+        getPersonOrigin,
+        getEquivalents,
+        pauseClan,
+        unpauseClan,
+        getClanCount,
+        isClanRegistered,
+        proposeClanLink,
+        areClansLinked,
+        isClanLinkProposed,
+        getLinkedClans,
+        withdrawClanLinkProposal,
+        removeClanLink,
+        claimClanRegistration,
         transferOwnership,
         getUserProfile,
         getNFTCollection,

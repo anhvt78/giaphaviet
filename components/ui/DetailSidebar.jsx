@@ -11,6 +11,7 @@ import { GenealogyContext } from "@/context/GenealogyContext";
 import AddSpouseModal from "./AddSpouseModal";
 import AddChildModal from "./AddChildModal";
 import UpdateMemberModal from "./UpdateMemberModal";
+import AddExternalSpouseModal from "./AddExternalSpouseModal";
 import { useSelector } from "react-redux";
 import sweetalert2 from "@/configs/swal";
 import Swal from "sweetalert2";
@@ -109,6 +110,11 @@ export default function DetailSidebar({
 
   const [modalAddChildState, setModalAddChildState] = useState(false);
   const [modalUpdateState, setModalUpdateState] = useState(false);
+  const [modalExternalSpouseOpen, setModalExternalSpouseOpen] = useState(false);
+
+  const [personOrigin, setPersonOrigin] = useState(null);
+  const [equivalents, setEquivalents] = useState([]);
+  const [removingExternalSpouseId, setRemovingExternalSpouseId] = useState(null);
 
   const userWalletAddress = useSelector(
     (state) => state.genealogyReducer.walletAddress,
@@ -118,7 +124,7 @@ export default function DetailSidebar({
 
   // console.log("userWalletAddress: ", userWalletAddress);
 
-  const { getOwner, removeChild, removeSpouse, getPersonDetail } =
+  const { getOwner, removeChild, removeSpouse, getPersonDetail, removeExternalSpouse, getPersonOrigin, getEquivalents } =
     useContext(GenealogyContext);
 
   const [owner, setOwner] = useState("0x");
@@ -184,6 +190,32 @@ export default function DetailSidebar({
       },
     );
   }, [person]);
+
+  const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
+
+  useEffect(() => {
+    if (!clanItem?.clanId || !person?.id) return;
+    setPersonOrigin(null);
+    setEquivalents([]);
+    getPersonOrigin(clanItem.clanId, person.id).then((res) => {
+      if (res.sts && res.data?.clanAddress && res.data.clanAddress !== ZERO_ADDR) {
+        setPersonOrigin(res.data);
+      }
+    });
+    getEquivalents(clanItem.clanId, person.id).then((res) => {
+      if (res.sts && Array.isArray(res.data)) setEquivalents(res.data);
+    });
+  }, [person?.id, clanItem?.clanId]);
+
+  const handleRemoveExternalSpouse = (extSpouse) => {
+    setRemovingExternalSpouseId(extSpouse.personId);
+    removeExternalSpouse(
+      userWalletAddress, clanItem?.clanId, person.id,
+      extSpouse.clanAddress, extSpouse.personId,
+      () => { setRemovingExternalSpouseId(null); fetchDataDialog(); },
+      (title, err) => { setRemovingExternalSpouseId(null); sweetalert2.popupAlert({ title, text: String(err) }); },
+    );
+  };
 
   const handleDelete = async () => {
     Swal.fire({
@@ -458,6 +490,20 @@ export default function DetailSidebar({
                         </>
                       )}
 
+                      {/* Phối ngẫu ngoài — non-spouse only */}
+                      {!person.isSpouse && (
+                        <button
+                          onClick={() => { setModalExternalSpouseOpen(true); setIsMenuOpen(false); }}
+                          className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                          Thêm phối ngẫu ngoài gia phả
+                        </button>
+                      )}
+
                       {/* Nhóm: Chỉnh sửa */}
                       <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-y border-[#8b5a2b]/10">
                         Quản lý
@@ -616,6 +662,104 @@ export default function DetailSidebar({
                     </span>
                   </div>
                 </section>
+
+                {/* External spouses section */}
+                {(person.externalSpouses?.length > 0 || (owner === userWalletAddress && !person.isSpouse)) && (
+                  <section>
+                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                      Phối ngẫu ngoài gia phả
+                    </h3>
+                    {person.externalSpouses?.length > 0 ? (
+                      <div className="space-y-2">
+                        {person.externalSpouses.map((ext) => (
+                          <div key={ext.personId} className="flex items-center gap-2 bg-white/60 border border-[#8b5a2b]/15 px-3 py-2 rounded">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8b5a2b" strokeWidth="2" className="flex-shrink-0 opacity-60">
+                              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-mono text-[#3d2611] truncate">
+                                {ext.clanAddress?.slice(0, 8)}...{ext.clanAddress?.slice(-4)}
+                              </p>
+                              <p className="text-[9px] font-mono text-[#8b5a2b]/60 truncate">
+                                ID: {ext.personId?.slice(0, 8)}...{ext.personId?.slice(-4)}
+                              </p>
+                            </div>
+                            {owner === userWalletAddress && (
+                              <button
+                                onClick={() => handleRemoveExternalSpouse(ext)}
+                                disabled={removingExternalSpouseId === ext.personId}
+                                className="text-[#8b5a2b]/40 hover:text-red-600 transition-colors flex-shrink-0 disabled:opacity-40"
+                                title="Xóa phối ngẫu ngoài"
+                              >
+                                {removingExternalSpouseId === ext.personId ? (
+                                  <div className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full" />
+                                ) : (
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                  </svg>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-[#8b5a2b]/40 italic">Chưa có phối ngẫu ngoài gia phả.</p>
+                    )}
+                  </section>
+                )}
+
+                {/* Person origin section */}
+                {personOrigin && (
+                  <section>
+                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                      Nguồn gốc xuyên gia phả
+                    </h3>
+                    <div className="bg-white/60 border border-[#8b5a2b]/15 px-3 py-2.5 rounded space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="2" className="flex-shrink-0">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        <span className="text-[10px] text-[#8b5a2b]/60 uppercase font-bold">Gia phả gốc</span>
+                      </div>
+                      <p className="text-[11px] font-mono text-[#3d2611]">
+                        {personOrigin.clanAddress?.slice(0, 10)}...{personOrigin.clanAddress?.slice(-6)}
+                      </p>
+                      <p className="text-[9px] font-mono text-[#8b5a2b]/50">
+                        Token: {personOrigin.personId?.slice(0, 10)}...{personOrigin.personId?.slice(-6)}
+                      </p>
+                    </div>
+                  </section>
+                )}
+
+                {/* Equivalents section */}
+                {equivalents.length > 0 && (
+                  <section>
+                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                      Thành viên tương đương
+                    </h3>
+                    <div className="space-y-2">
+                      {equivalents.map((eq, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-white/60 border border-[#8b5a2b]/15 px-3 py-2 rounded">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8b5a2b" strokeWidth="2" className="flex-shrink-0 opacity-60">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                          </svg>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-mono text-[#3d2611] truncate">
+                              {eq.clanAddress?.slice(0, 8)}...{eq.clanAddress?.slice(-4)}
+                            </p>
+                            <p className="text-[9px] font-mono text-[#8b5a2b]/60 truncate">
+                              {eq.personId?.slice(0, 8)}...{eq.personId?.slice(-4)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
                 {person.shortDesc && (
                   <section>
@@ -804,6 +948,14 @@ export default function DetailSidebar({
         {modalUpdateState && (
           <UpdateMemberModal
             onClose={() => setModalUpdateState(false)}
+            person={person}
+            clanItem={clanItem}
+            fetchDataDialog={fetchDataDialog}
+          />
+        )}
+        {modalExternalSpouseOpen && (
+          <AddExternalSpouseModal
+            onClose={() => setModalExternalSpouseOpen(false)}
             person={person}
             clanItem={clanItem}
             fetchDataDialog={fetchDataDialog}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState, Suspense } from "react";
+import React, { useContext, useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import GenealogyDetailForm from "@/app/Forms/GenealogyDetailForm";
 import GenealogyDiagramForm from "@/app/Forms/GenealogyDiagramForm";
@@ -12,6 +12,7 @@ import {
 } from "@/components/Utils/helpers";
 import Lottie from "lottie-react";
 import gettingDataAnimation from "../../assets/animations/gettingData.json";
+import { CornerMedallion, HuiZiWenBorder } from "@/components/ui/imperial";
 
 const NONE_ID =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -29,6 +30,9 @@ function GenealogyDetailContent() {
 
   const [tabIndex, setTabIndex] = useState(0);
   const [familyData, setFamilyData] = useState(null);
+  const [navVisible, setNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const contentAreaRef = useRef(null);
 
   const { getClanDetail, getPersonData } = useContext(GenealogyContext);
 
@@ -44,6 +48,32 @@ function GenealogyDetailContent() {
     }
     fetchDataDetail();
   }, [clanId]);
+
+  useEffect(() => {
+    const area = contentAreaRef.current;
+    if (!area) return;
+
+    const onScroll = (e) => {
+      const y = e.target.scrollTop;
+      const delta = y - lastScrollY.current;
+      if (delta > 8 && y > 80) setNavVisible(false);
+      else if (delta < -8 || y < 40) setNavVisible(true);
+      lastScrollY.current = y;
+    };
+
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) < 10) return;
+      if (e.deltaY > 0) setNavVisible(false);
+      else setNavVisible(true);
+    };
+
+    area.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    area.addEventListener("wheel", onWheel, { capture: true, passive: true });
+    return () => {
+      area.removeEventListener("scroll", onScroll, { capture: true });
+      area.removeEventListener("wheel", onWheel, { capture: true });
+    };
+  }, []);
 
   const fetchDataDetail = async () => {
     try {
@@ -132,13 +162,14 @@ function GenealogyDetailContent() {
               name: spouseResult.data.name,
               birthDate: spouseResult.data.birthDate,
               deathDate: spouseResult.data.deathDate,
+              isDeceased: spouseResult.data.isDeceased ?? false,
               shortDesc: spouseResult.data.shortDesc,
               gender: GENDER_MAP[spouseResult.data.sex] || "undefined",
               isSpouse: true,
               spouseId: personId,
-              // ✅ Vợ/chồng không có generation riêng, dùng cùng thế hệ với người phối ngẫu
               generation: generation,
               createdAt: spouseResult.data.createdAt,
+              externalSpouses: spouseResult.data.externalSpouses || [],
             };
           }),
         );
@@ -149,12 +180,12 @@ function GenealogyDetailContent() {
           gender: GENDER_MAP[data.sex] || "undefined",
           birthDate: data.birthDate,
           deathDate: data.deathDate,
+          isDeceased: data.isDeceased ?? false,
           shortDesc: data.shortDesc,
           parents: data.parentId !== NONE_ID ? [data.parentId] : [],
           spouses: spousesDetails,
-          // ✅ FIX 1: Lưu thế hệ vào item
+          externalSpouses: data.externalSpouses || [],
           generation: generation,
-          // ✅ FIX 2: Chuyển createdAt về BigInt an toàn để sort
           createdAt: data.createdAt,
         };
 
@@ -191,15 +222,29 @@ function GenealogyDetailContent() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#e8d5b5] flex flex-col overflow-hidden font-serif">
+    <div className="w-full h-screen bg-[#F5EDD0] flex flex-col overflow-hidden font-serif relative">
 
       {/* ── SHARED TOP NAVBAR ── */}
       {clanItem && (
-        <nav className="flex-shrink-0 bg-[#1e0f05]/96 backdrop-blur-sm border-b border-[#5d3a1a]/30 px-4 md:px-6 py-3 flex items-center justify-between z-40">
+        <div className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${navVisible ? "max-h-20" : "max-h-0"}`}>
+        <nav className="bg-[#8B1A1A] z-40 relative overflow-hidden py-3">
+          {/* Top + bottom thick gold borders */}
+          <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          {/* Inner thin lines */}
+          <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+          <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+
+          <CornerMedallion side="left" />
+          <CornerMedallion side="right" />
+
+          {/* Nav content — z-10 to sit above decorative SVGs */}
+          <div className="relative z-10 flex items-center justify-between px-16">
+
           {/* Left: Back */}
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-[#8b6045] hover:text-[#f2e2ba] text-[11px] font-bold uppercase tracking-wider transition-all"
+            className="flex items-center gap-2 text-[#C8960C]/70 hover:text-[#F5EDD0] text-[11px] font-bold uppercase tracking-wider transition-all"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -209,16 +254,16 @@ function GenealogyDetailContent() {
 
           {/* Center: Clan name + tab pills */}
           <div className="flex flex-col items-center gap-2">
-            <span className="text-[#c4922a] text-[11px] font-bold uppercase tracking-[0.25em] hidden sm:block truncate max-w-[240px]">
+            <span className="text-[#C8960C] text-[11px] font-bold uppercase tracking-[0.25em] hidden sm:block truncate max-w-[240px]">
               {clanItem.clanName}
             </span>
-            <div className="flex border border-[#5d3a1a]/50 overflow-hidden">
+            <div className="flex border border-[#C8960C]/40 overflow-hidden">
               <button
                 onClick={() => setTabIndex(0)}
                 className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all ${
                   tabIndex === 0
-                    ? "bg-[#3d2611] text-[#f2e2ba]"
-                    : "text-[#8b6045] hover:text-[#f2e2ba] hover:bg-[#3d2611]/40"
+                    ? "bg-[#6B0000] text-[#C8960C]"
+                    : "text-[#C8960C]/60 hover:text-[#F5EDD0] hover:bg-[#6B0000]/40"
                 }`}
               >
                 Chi tiết
@@ -226,10 +271,10 @@ function GenealogyDetailContent() {
               <button
                 onClick={() => !loadingClanDialog && setTabIndex(1)}
                 disabled={loadingClanDialog}
-                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider border-l border-[#5d3a1a]/50 transition-all disabled:opacity-40 ${
+                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider border-l border-[#C8960C]/40 transition-all disabled:opacity-40 ${
                   tabIndex === 1
-                    ? "bg-[#3d2611] text-[#f2e2ba]"
-                    : "text-[#8b6045] hover:text-[#f2e2ba] hover:bg-[#3d2611]/40"
+                    ? "bg-[#6B0000] text-[#C8960C]"
+                    : "text-[#C8960C]/60 hover:text-[#F5EDD0] hover:bg-[#6B0000]/40"
                 }`}
               >
                 {loadingClanDialog && tabIndex === 1 ? (
@@ -245,13 +290,29 @@ function GenealogyDetailContent() {
           {/* Right: LUKSO badge */}
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-[#FE005B]" />
-            <span className="text-[#5a3518] text-[10px] uppercase tracking-[0.2em] font-bold hidden sm:block">LUKSO</span>
+            <span className="text-[#C8960C]/50 text-[10px] uppercase tracking-[0.2em] font-bold hidden sm:block">LUKSO</span>
           </div>
+
+          </div>{/* end nav content */}
         </nav>
+
+        <HuiZiWenBorder id="detailHuiZi" />
+        </div>
+      )}
+
+      {/* Toggle pill — hiện khi nav ẩn */}
+      {clanItem && !navVisible && (
+        <button
+          onClick={() => setNavVisible(true)}
+          className="absolute top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-[#8B1A1A]/90 backdrop-blur-sm border border-[#C8960C]/40 px-3 py-1 text-[#C8960C] text-[10px] uppercase tracking-widest font-bold hover:bg-[#6B0000] transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          Menu
+        </button>
       )}
 
       {/* ── CONTENT AREA ── */}
-      <div className="flex-1 overflow-hidden relative">
+      <div ref={contentAreaRef} className="flex-1 overflow-hidden relative flex flex-col">
         {tabIndex == 0 && (
           <>
             {!loadingClanDetail ? (
@@ -287,7 +348,7 @@ function GenealogyDetailContent() {
 
 function LoadingState({ message }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center font-serif bg-[#e8d5b5]">
+    <div className="flex-1 min-h-screen flex flex-col items-center justify-center font-serif bg-[#F5EDD0]">
       {/* Spinner rings */}
       <div className="relative w-20 h-20 mb-8">
         {/* Outer ring — slow clockwise */}
@@ -297,10 +358,10 @@ function LoadingState({ message }) {
           viewBox="0 0 80 80"
           aria-hidden="true"
         >
-          <circle cx="40" cy="40" r="36" fill="none" stroke="#c9b48a" strokeWidth="2" />
+          <circle cx="40" cy="40" r="36" fill="none" stroke="#C8960C" strokeWidth="2" />
           <circle
             cx="40" cy="40" r="36" fill="none"
-            stroke="#c4922a" strokeWidth="2.5"
+            stroke="#C8960C" strokeWidth="2.5"
             strokeDasharray="85 141" strokeLinecap="round"
           />
         </svg>
@@ -315,10 +376,10 @@ function LoadingState({ message }) {
           viewBox="0 0 56 56"
           aria-hidden="true"
         >
-          <circle cx="28" cy="28" r="24" fill="none" stroke="#c9b48a" strokeWidth="1.5" />
+          <circle cx="28" cy="28" r="24" fill="none" stroke="#C8960C" strokeWidth="1.5" />
           <circle
             cx="28" cy="28" r="24" fill="none"
-            stroke="#8b5a2b" strokeWidth="2"
+            stroke="#C8960C" strokeWidth="2"
             strokeDasharray="40 110" strokeLinecap="round"
           />
         </svg>
@@ -326,7 +387,7 @@ function LoadingState({ message }) {
         <div className="absolute inset-0 flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            viewBox="0 0 24 24" fill="none" stroke="#5d3a1a"
+            viewBox="0 0 24 24" fill="none" stroke="#8B1A1A"
             strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
           >
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -338,10 +399,10 @@ function LoadingState({ message }) {
       </div>
 
       {/* Message */}
-      <p className="text-[#3d2611] text-sm font-serif uppercase tracking-[0.25em] text-center px-6 animate-pulse mb-2">
+      <p className="text-[#8B1A1A] text-sm font-serif uppercase tracking-[0.25em] text-center px-6 animate-pulse mb-2">
         {message}
       </p>
-      <p className="text-[#8b5a2b]/50 text-[10px] font-mono uppercase tracking-widest">
+      <p className="text-[#8B1A1A]/40 text-[10px] font-mono uppercase tracking-widest">
         LUKSO Mainnet
       </p>
     </div>

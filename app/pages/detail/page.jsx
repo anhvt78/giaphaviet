@@ -12,7 +12,6 @@ import {
 } from "@/components/Utils/helpers";
 import Lottie from "lottie-react";
 import gettingDataAnimation from "../../assets/animations/gettingData.json";
-import { CornerMedallion, HuiZiWenBorder } from "@/components/ui/imperial";
 
 const NONE_ID =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -30,8 +29,6 @@ function GenealogyDetailContent() {
 
   const [tabIndex, setTabIndex] = useState(0);
   const [familyData, setFamilyData] = useState(null);
-  const [navVisible, setNavVisible] = useState(true);
-  const lastScrollY = useRef(0);
   const contentAreaRef = useRef(null);
 
   const { getClanDetail, getPersonData } = useContext(GenealogyContext);
@@ -39,6 +36,8 @@ function GenealogyDetailContent() {
   const [clanItem, setClanItem] = useState();
   const [loadingClanDetail, setLoadingClanDetail] = useState(true);
   const [loadingClanDialog, setLoadingClanDialog] = useState(true);
+  const [navVisible, setNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (!clanId) {
@@ -49,31 +48,17 @@ function GenealogyDetailContent() {
     fetchDataDetail();
   }, [clanId]);
 
-  useEffect(() => {
-    const area = contentAreaRef.current;
-    if (!area) return;
-
-    const onScroll = (e) => {
-      const y = e.target.scrollTop;
-      const delta = y - lastScrollY.current;
-      if (delta > 8 && y > 80) setNavVisible(false);
-      else if (delta < -8 || y < 40) setNavVisible(true);
-      lastScrollY.current = y;
-    };
-
-    const onWheel = (e) => {
-      if (Math.abs(e.deltaY) < 10) return;
-      if (e.deltaY > 0) setNavVisible(false);
-      else setNavVisible(true);
-    };
-
-    area.addEventListener("scroll", onScroll, { capture: true, passive: true });
-    area.addEventListener("wheel", onWheel, { capture: true, passive: true });
-    return () => {
-      area.removeEventListener("scroll", onScroll, { capture: true });
-      area.removeEventListener("wheel", onWheel, { capture: true });
-    };
-  }, []);
+  const handleContentScroll = (e) => {
+    const currentY = e.currentTarget.scrollTop ?? 0;
+    if (currentY <= 0) {
+      setNavVisible(true);
+    } else if (currentY > lastScrollY.current + 8) {
+      setNavVisible(false);
+    } else if (currentY < lastScrollY.current - 8) {
+      setNavVisible(true);
+    }
+    lastScrollY.current = currentY;
+  };
 
   const fetchDataDetail = async () => {
     try {
@@ -226,8 +211,8 @@ function GenealogyDetailContent() {
 
       {/* ── SHARED TOP NAVBAR ── */}
       {clanItem && (
-        <div className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${navVisible ? "max-h-20" : "max-h-0"}`}>
-        <nav className="bg-[#8B1A1A] z-40 relative overflow-hidden py-3">
+        <div className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${navVisible ? "max-h-[300px]" : "max-h-0"}`}>
+        <nav className="bg-[#8B1A1A] z-40 relative overflow-hidden py-0" style={{ minHeight: 176 }}>
           {/* Top + bottom thick gold borders */}
           <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
           <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
@@ -235,14 +220,20 @@ function GenealogyDetailContent() {
           <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
           <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
 
-          <CornerMedallion side="left" />
-          <CornerMedallion side="right" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/hoa_tiet_sen_vang.svg" alt="" aria-hidden="true"
+            className="absolute left-0 top-2/3 -translate-y-1/2 pointer-events-none"
+            style={{ height: "calc(70% - 8px)", width: "auto" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/hoa_tiet_cay_tre.svg" alt="" aria-hidden="true"
+            className="absolute right-0 top-2/3 -translate-y-1/2 pointer-events-none"
+            style={{ height: "calc(70% - 8px)", width: "auto" }} />
 
           {/* Nav content — z-10 to sit above decorative SVGs */}
-          <div className="relative z-10 flex items-center justify-between px-16">
+          <div className="relative z-10 flex items-center justify-between px-16 h-full" style={{ minHeight: 176 }}>
 
           {/* Left: Back */}
-          <button
+          {/* <button
             onClick={() => router.push("/")}
             className="flex items-center gap-2 text-[#C8960C]/70 hover:text-[#F5EDD0] text-[11px] font-bold uppercase tracking-wider transition-all"
           >
@@ -250,68 +241,56 @@ function GenealogyDetailContent() {
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
             <span className="hidden sm:inline">Danh sách</span>
-          </button>
+          </button> */}
 
-          {/* Center: Clan name + tab pills */}
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-[#C8960C] text-[11px] font-bold uppercase tracking-[0.25em] hidden sm:block truncate max-w-[240px]">
-              {clanItem.clanName}
-            </span>
-            <div className="flex border border-[#C8960C]/40 overflow-hidden">
-              <button
-                onClick={() => setTabIndex(0)}
-                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  tabIndex === 0
-                    ? "bg-[#6B0000] text-[#C8960C]"
-                    : "text-[#C8960C]/60 hover:text-[#F5EDD0] hover:bg-[#6B0000]/40"
-                }`}
-              >
-                Chi tiết
-              </button>
-              <button
-                onClick={() => !loadingClanDialog && setTabIndex(1)}
-                disabled={loadingClanDialog}
-                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider border-l border-[#C8960C]/40 transition-all disabled:opacity-40 ${
-                  tabIndex === 1
-                    ? "bg-[#6B0000] text-[#C8960C]"
-                    : "text-[#C8960C]/60 hover:text-[#F5EDD0] hover:bg-[#6B0000]/40"
-                }`}
-              >
-                {loadingClanDialog && tabIndex === 1 ? (
-                  <span className="flex items-center gap-1.5">
-                    <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/></svg>
-                    Phả đồ
-                  </span>
-                ) : "Phả đồ"}
-              </button>
+          {/* Center: Banner hoành phi + tên dòng tộc */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ height: 200, width: 1200 }}>
+            <div className="relative w-full h-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/banner_hoanh_phi.svg" alt="" aria-hidden="true"
+                className="absolute inset-0 w-full h-full" />
+              {/* Tên dòng tộc — nằm trong vùng đỏ giữa banner */}
+              <div className="absolute flex flex-col items-center justify-center gap-0.5 ml-2"
+                style={{ left: "10%", right: "10%", top: "38%", bottom: "14%" }}>
+                {/* <span className="uppercase text-center tracking-[0.3em]"
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "#FFF8E7",
+                    textShadow: "0 0 6px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)",
+                  }}>
+                  Họ
+                </span> */}
+                <span className="uppercase text-center leading-tight"
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 900,
+                    letterSpacing: "0.2em",
+                    color: "#fffbbc",
+                    textShadow: "0 0 8px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8), 0 -1px 2px rgba(0,0,0,0.6)",
+                  }}>
+                  {clanItem.clanName}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Right: LUKSO badge */}
-          <div className="flex items-center gap-1.5">
+          {/* <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-[#FE005B]" />
             <span className="text-[#C8960C]/50 text-[10px] uppercase tracking-[0.2em] font-bold hidden sm:block">LUKSO</span>
-          </div>
+          </div> */}
 
           </div>{/* end nav content */}
         </nav>
 
-        <HuiZiWenBorder id="detailHuiZi" />
+        <div aria-hidden="true" className="w-full flex-shrink-0"
+          style={{ height: 15, backgroundImage: "url(/hoa_tiet_vien_ngang.svg)", backgroundRepeat: "repeat-x", backgroundSize: "auto 15px" }} />
         </div>
       )}
 
-      {/* Toggle pill — hiện khi nav ẩn */}
-      {clanItem && !navVisible && (
-        <button
-          onClick={() => setNavVisible(true)}
-          className="absolute top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-[#8B1A1A]/90 backdrop-blur-sm border border-[#C8960C]/40 px-3 py-1 text-[#C8960C] text-[10px] uppercase tracking-widest font-bold hover:bg-[#6B0000] transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          Menu
-        </button>
-      )}
-
-      {/* ── CONTENT AREA ── */}
+{/* ── CONTENT AREA ── */}
       <div ref={contentAreaRef} className="flex-1 overflow-hidden relative flex flex-col">
         {tabIndex == 0 && (
           <>
@@ -320,6 +299,7 @@ function GenealogyDetailContent() {
                 clanItem={clanItem}
                 setTabIndex={setTabIndex}
                 fetchDataDetail={fetchDataDetail}
+                onScroll={handleContentScroll}
               />
             ) : (
               <LoadingState message="Đang truy vấn dữ liệu dòng tộc..." />

@@ -9,7 +9,6 @@ import ClanListItem from "./Items/ClanListItem";
 import sweetalert2 from "@/configs/swal";
 import Lottie from "lottie-react";
 import loaderAnimation from "../assets/animations/loader.json";
-import { CornerMedallion, HuiZiWenBorder } from "@/components/ui/imperial";
 
 export default function ClanListForm({ userWalletAddress }) {
   const router = useRouter();
@@ -19,8 +18,6 @@ export default function ClanListForm({ userWalletAddress }) {
   const [allClanId, setAllClanId] = useState([]);
   const [isCreator, setIsCreator] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [navVisible, setNavVisible] = useState(true);
-  const lastScrollY = useRef(0);
   const scrollRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,20 +116,6 @@ export default function ClanListForm({ userWalletAddress }) {
     getClanId();
   }, [userWalletAddress]);
 
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const y = el.scrollTop;
-      const delta = y - lastScrollY.current;
-      if (delta > 8 && y > 80) setNavVisible(false);
-      else if (delta < -8 || y < 40) setNavVisible(true);
-      lastScrollY.current = y;
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, []);
-
   const handleDisconnect = () => {
     dispatch(setWalletAddress(""));
   };
@@ -143,20 +126,29 @@ export default function ClanListForm({ userWalletAddress }) {
 
   return (
     <div className="min-h-screen w-full bg-[#F5EDD0] font-serif flex flex-col relative">
-      {/* Dragon scale background — full page */}
+      {/* Lotus-diamond tessellation background */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true">
         <defs>
-          <pattern id="pageScale" x="0" y="0" width="30" height="20" patternUnits="userSpaceOnUse">
-            <path d="M0,20 C5,9 25,9 30,20" fill="none" stroke="#8B1A1A" strokeWidth="0.6" opacity="0.06"/>
-            <path d="M-15,40 C-10,29 10,29 15,40" fill="none" stroke="#8B1A1A" strokeWidth="0.6" opacity="0.06"/>
-            <path d="M15,40 C20,29 40,29 45,40" fill="none" stroke="#8B1A1A" strokeWidth="0.6" opacity="0.06"/>
+          <pattern id="pagePattern" x="0" y="0" width="56" height="56" patternUnits="userSpaceOnUse">
+            {/* Outer diamond — vertices at tile edges so seams connect perfectly */}
+            <path d="M28,0 L56,28 L28,56 L0,28 Z" fill="none" stroke="#8B1A1A" strokeWidth="0.5" opacity="0.09"/>
+            {/* Inner diamond */}
+            <path d="M28,13 L43,28 L28,43 L13,28 Z" fill="none" stroke="#8B1A1A" strokeWidth="0.35" opacity="0.055"/>
+            {/* 4-petal lotus at center (28,28) */}
+            <ellipse cx="28" cy="19.5" rx="2.5" ry="6.5" fill="#8B1A1A" opacity="0.065"/>
+            <ellipse cx="28" cy="36.5" rx="2.5" ry="6.5" fill="#8B1A1A" opacity="0.065"/>
+            <ellipse cx="19.5" cy="28" rx="6.5" ry="2.5" fill="#8B1A1A" opacity="0.065"/>
+            <ellipse cx="36.5" cy="28" rx="6.5" ry="2.5" fill="#8B1A1A" opacity="0.065"/>
+            {/* Center medallion */}
+            <circle cx="28" cy="28" r="3.5" fill="#C8960C" opacity="0.075"/>
+            <circle cx="28" cy="28" r="1.5" fill="#8B1A1A" opacity="0.09"/>
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#pageScale)"/>
+        <rect width="100%" height="100%" fill="url(#pagePattern)"/>
       </svg>
 
       {/* ── STICKY NAVBAR ── */}
-      <div className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${navVisible ? "max-h-20" : "max-h-0"}`}>
+      <div className="flex-shrink-0">
       <nav className="bg-[#8B1A1A] relative overflow-hidden py-3.5" aria-hidden="false">
         {/* Top + bottom thick gold borders */}
         <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
@@ -165,8 +157,14 @@ export default function ClanListForm({ userWalletAddress }) {
         <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
         <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
 
-        <CornerMedallion side="left" />
-        <CornerMedallion side="right" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hoa_tiet_sen_vang.svg" alt="" aria-hidden="true"
+          className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ height: "calc(100% - 8px)", width: "auto" }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hoa_tiet_cay_tre.svg" alt="" aria-hidden="true"
+          className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ height: "calc(100% - 8px)", width: "auto" }} />
 
         {/* Nav content — elevated above decorative elements */}
         <div className="relative z-10 flex items-center justify-between px-16">
@@ -206,7 +204,8 @@ export default function ClanListForm({ userWalletAddress }) {
         </div>{/* end nav content wrapper */}
       </nav>
 
-      <HuiZiWenBorder id="clanHuiZi" />
+      <div aria-hidden="true" className="w-full flex-shrink-0"
+        style={{ height: 15, backgroundImage: "url(/hoa_tiet_vien_ngang.svg)", backgroundRepeat: "repeat-x", backgroundSize: "auto 15px" }} />
       </div>
 
       {/* ── MAIN CONTENT ── */}
@@ -257,33 +256,15 @@ export default function ClanListForm({ userWalletAddress }) {
             <h1 className="text-3xl md:text-4xl font-black text-[#8B1A1A] tracking-[0.15em] uppercase mb-4">
               Gia Phả Của Bạn
             </h1>
-            {/* Phoenix divider */}
-            <svg className="w-full max-w-lg mx-auto mb-5" height="36" viewBox="0 0 420 36" aria-hidden="true">
-              <line x1="0" y1="17" x2="148" y2="17" stroke="#8B1A1A" strokeWidth="0.8" opacity="0.35"/>
-              {/* Body */}
-              <ellipse cx="210" cy="15" rx="12" ry="6" fill="none" stroke="#C8960C" strokeWidth="1.6"/>
-              {/* Left wing upper */}
-              <path d="M198,15 Q180,4 158,9 Q173,13 198,15" fill="none" stroke="#C8960C" strokeWidth="1.4"/>
-              <path d="M198,15 Q183,2 165,5 Q177,9 198,15" fill="none" stroke="#C8960C" strokeWidth="0.8" opacity="0.55"/>
-              <path d="M173,10 Q177,7 182,10" fill="none" stroke="#C8960C" strokeWidth="0.6" opacity="0.5"/>
-              {/* Right wing upper */}
-              <path d="M222,15 Q240,4 262,9 Q247,13 222,15" fill="none" stroke="#C8960C" strokeWidth="1.4"/>
-              <path d="M222,15 Q237,2 255,5 Q243,9 222,15" fill="none" stroke="#C8960C" strokeWidth="0.8" opacity="0.55"/>
-              <path d="M247,10 Q243,7 238,10" fill="none" stroke="#C8960C" strokeWidth="0.6" opacity="0.5"/>
-              {/* Tail feathers */}
-              <path d="M205,21 Q200,30 195,36" fill="none" stroke="#C8960C" strokeWidth="1.1" opacity="0.85"/>
-              <path d="M210,21 Q210,30 210,36" fill="none" stroke="#C8960C" strokeWidth="1.1" opacity="0.85"/>
-              <path d="M215,21 Q220,30 225,36" fill="none" stroke="#C8960C" strokeWidth="1.1" opacity="0.85"/>
-              <path d="M202,20 Q195,28 189,34" fill="none" stroke="#C8960C" strokeWidth="0.7" opacity="0.5"/>
-              <path d="M218,20 Q225,28 231,34" fill="none" stroke="#C8960C" strokeWidth="0.7" opacity="0.5"/>
-              {/* Crest */}
-              <path d="M210,9 Q208,2 210,0 Q212,2 210,9" fill="none" stroke="#D4AF37" strokeWidth="1.4"/>
-              <path d="M210,9 Q205,3 203,0" fill="none" stroke="#D4AF37" strokeWidth="0.9" opacity="0.7"/>
-              <path d="M210,9 Q215,3 217,0" fill="none" stroke="#D4AF37" strokeWidth="0.9" opacity="0.7"/>
-              {/* Eye */}
-              <circle cx="207" cy="14" r="2" fill="#D4AF37"/>
-              <line x1="272" y1="17" x2="420" y2="17" stroke="#8B1A1A" strokeWidth="0.8" opacity="0.35"/>
-            </svg>
+            {/* Họa tiết trung tâm */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hoa_tiet_trung_tam.svg"
+              alt=""
+              aria-hidden="true"
+              className="w-full max-w-lg mx-auto mb-5 block"
+              style={{ height: 52, objectFit: "contain" }}
+            />
             <p className="text-[#8B1A1A]/70 italic text-base mb-6">
               Cây có cội, nước có nguồn
             </p>
@@ -302,7 +283,7 @@ export default function ClanListForm({ userWalletAddress }) {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl w-full">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl w-full">
             {allClanId.map((clanId, index) => (
               <ClanListItem clanId={clanId} key={index} />
             ))}
@@ -310,7 +291,7 @@ export default function ClanListForm({ userWalletAddress }) {
             {/* Add new card */}
             <div
               onClick={() => setIsModalOpen(true)}
-              className="border-2 border-dashed border-[#8B1A1A]/25 flex flex-col items-center justify-center p-10 min-h-[160px] opacity-50 hover:opacity-100 hover:border-[#8B1A1A]/60 hover:bg-[#8B1A1A]/5 transition-all duration-300 cursor-pointer group"
+              className="border-2 border-dashed border-[#8B1A1A]/25 flex flex-col items-center justify-center aspect-[7/10] opacity-50 hover:opacity-100 hover:border-[#8B1A1A]/60 hover:bg-[#8B1A1A]/5 transition-all duration-300 cursor-pointer group"
             >
               <div className="w-12 h-12 border-2 border-dashed border-[#8B1A1A]/40 flex items-center justify-center mb-3 group-hover:border-[#8B1A1A] group-hover:bg-[#8B1A1A] group-hover:text-[#C8960C] text-[#8B1A1A] transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

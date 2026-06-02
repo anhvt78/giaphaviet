@@ -329,8 +329,12 @@ export default function ConnectForm() {
                 />
                 <button
                   onClick={handleAccessById}
-                  className="px-5 py-3 bg-[#8B1A1A] text-[#C8960C] text-[11px] font-black uppercase tracking-[0.18em] hover:bg-[#6B0000] active:scale-95 transition-all border-2 border-[#8B1A1A]"
+                  className="px-5 py-3 bg-[#8B1A1A] text-[#C8960C] text-[11px] font-black uppercase tracking-[0.18em] hover:bg-[#6B0000] active:scale-95 transition-all border-2 border-[#8B1A1A] relative overflow-hidden"
                 >
+                  <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#D4AF37]" />
+                  <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#D4AF37]" />
+                  <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#D4AF37]" />
+                  <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#D4AF37]" />
                   Vào
                 </button>
               </div>

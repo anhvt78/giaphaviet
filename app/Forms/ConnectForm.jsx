@@ -190,10 +190,10 @@ export default function ConnectForm() {
   }, [isScanning, isMobile]);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row font-serif overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col md:flex-row font-serif overflow-hidden">
 
       {/* ── LEFT HERO PANEL ── */}
-      <div className="hidden md:flex md:w-[45%] relative flex-col justify-between bg-[#1A0505] overflow-hidden px-12 py-10">
+      <div className="hidden md:flex md:w-1/3 relative flex-col justify-between bg-[#1A0505] overflow-hidden px-12 py-10">
 
         {/* Dragon scale background */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
@@ -262,7 +262,7 @@ export default function ConnectForm() {
       </div>
 
       {/* ── RIGHT FORM PANEL ── */}
-      <div className="flex-1 flex flex-col justify-center items-center bg-[#F5EDD0] px-6 py-12 relative overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center bg-[#F5EDD0] px-6 py-12 relative overflow-y-auto">
 
         {/* Coin pattern SVG background */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
@@ -297,11 +297,11 @@ export default function ConnectForm() {
           <p className="text-[#8B1A1A]/50 text-xs italic mt-1">Cây có cội, nước có nguồn</p>
         </div>
 
-        <div className="w-full max-w-[340px] relative z-10">
+        <div className="w-full md:w-1/2 relative z-10">
 
           {/* Heading */}
           <div className="mb-8">
-            <h2 className="text-[1.6rem] font-black text-[#8B1A1A] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+            <h2 className="text-[1.6rem] font-black text-[#8B1A1A] uppercase tracking-[0.15em] mb-2 flex items-center gap-2 whitespace-nowrap">
               <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5,0 L10,5 L5,10 L0,5 Z" fill="#C8960C" opacity="0.6"/></svg>
               Truy cập gia phả
               <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5,0 L10,5 L5,10 L0,5 Z" fill="#C8960C" opacity="0.6"/></svg>

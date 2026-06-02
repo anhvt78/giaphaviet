@@ -42,19 +42,21 @@ export default function ClanListForm({ userWalletAddress }) {
     if (!dateStr || dateStr.trim() === "") return { day: 0, month: 0, year: 0 };
 
     const parts = dateStr.split(/[\/\-.]/);
-    let day = 0, month = 0, year = 0;
+    let day = 0,
+      month = 0,
+      year = 0;
 
     if (parts.length === 3) {
-      day   = parseInt(parts[0]) || 0;
+      day = parseInt(parts[0]) || 0;
       month = parseInt(parts[1]) || 0;
-      year  = parseInt(parts[2]) || 0;
+      year = parseInt(parts[2]) || 0;
     } else {
       year = parseInt(parts[0]) || 0;
     }
 
     // Contract yêu cầu: nếu year != 0 thì month và day phải trong [1,12]/[1,31]
     if (year !== 0 && month === 0) month = 1;
-    if (year !== 0 && day   === 0) day   = 1;
+    if (year !== 0 && day === 0) day = 1;
 
     return { day, month, year };
   };
@@ -75,7 +77,10 @@ export default function ClanListForm({ userWalletAddress }) {
       isDeceased: !isStillAlive,
     };
 
-    console.log("Dữ liệu gửi lên Blockchain:", JSON.stringify(formattedData, null, 2));
+    console.log(
+      "Dữ liệu gửi lên Blockchain:",
+      JSON.stringify(formattedData, null, 2),
+    );
 
     createClan(userWalletAddress, formattedData, callBack, handleErr);
   };
@@ -127,184 +132,352 @@ export default function ClanListForm({ userWalletAddress }) {
   return (
     <div className="min-h-screen w-full bg-[#F5EDD0] font-serif flex flex-col relative">
       {/* Lotus-diamond tessellation background */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true">
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none z-0"
+        aria-hidden="true"
+      >
         <defs>
-          <pattern id="pagePattern" x="0" y="0" width="56" height="56" patternUnits="userSpaceOnUse">
+          <pattern
+            id="pagePattern"
+            x="0"
+            y="0"
+            width="56"
+            height="56"
+            patternUnits="userSpaceOnUse"
+          >
             {/* Outer diamond — vertices at tile edges so seams connect perfectly */}
-            <path d="M28,0 L56,28 L28,56 L0,28 Z" fill="none" stroke="#8B1A1A" strokeWidth="0.5" opacity="0.09"/>
+            <path
+              d="M28,0 L56,28 L28,56 L0,28 Z"
+              fill="none"
+              stroke="#8B1A1A"
+              strokeWidth="0.5"
+              opacity="0.09"
+            />
             {/* Inner diamond */}
-            <path d="M28,13 L43,28 L28,43 L13,28 Z" fill="none" stroke="#8B1A1A" strokeWidth="0.35" opacity="0.055"/>
+            <path
+              d="M28,13 L43,28 L28,43 L13,28 Z"
+              fill="none"
+              stroke="#8B1A1A"
+              strokeWidth="0.35"
+              opacity="0.055"
+            />
             {/* 4-petal lotus at center (28,28) */}
-            <ellipse cx="28" cy="19.5" rx="2.5" ry="6.5" fill="#8B1A1A" opacity="0.065"/>
-            <ellipse cx="28" cy="36.5" rx="2.5" ry="6.5" fill="#8B1A1A" opacity="0.065"/>
-            <ellipse cx="19.5" cy="28" rx="6.5" ry="2.5" fill="#8B1A1A" opacity="0.065"/>
-            <ellipse cx="36.5" cy="28" rx="6.5" ry="2.5" fill="#8B1A1A" opacity="0.065"/>
+            <ellipse
+              cx="28"
+              cy="19.5"
+              rx="2.5"
+              ry="6.5"
+              fill="#8B1A1A"
+              opacity="0.065"
+            />
+            <ellipse
+              cx="28"
+              cy="36.5"
+              rx="2.5"
+              ry="6.5"
+              fill="#8B1A1A"
+              opacity="0.065"
+            />
+            <ellipse
+              cx="19.5"
+              cy="28"
+              rx="6.5"
+              ry="2.5"
+              fill="#8B1A1A"
+              opacity="0.065"
+            />
+            <ellipse
+              cx="36.5"
+              cy="28"
+              rx="6.5"
+              ry="2.5"
+              fill="#8B1A1A"
+              opacity="0.065"
+            />
             {/* Center medallion */}
-            <circle cx="28" cy="28" r="3.5" fill="#C8960C" opacity="0.075"/>
-            <circle cx="28" cy="28" r="1.5" fill="#8B1A1A" opacity="0.09"/>
+            <circle cx="28" cy="28" r="3.5" fill="#C8960C" opacity="0.075" />
+            <circle cx="28" cy="28" r="1.5" fill="#8B1A1A" opacity="0.09" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#pagePattern)"/>
+        <rect width="100%" height="100%" fill="url(#pagePattern)" />
       </svg>
 
       {/* ── STICKY NAVBAR ── */}
       <div className="flex-shrink-0">
-      <nav className="bg-[#8B1A1A] relative overflow-hidden py-3.5" aria-hidden="false">
-        {/* Top + bottom thick gold borders */}
-        <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
-        <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
-        {/* Inner thin lines */}
-        <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
-        <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+        <nav
+          className="bg-[#8B1A1A] relative overflow-hidden py-3.5"
+          aria-hidden="false"
+        >
+          {/* Top + bottom thick gold borders */}
+          <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          {/* Inner thin lines */}
+          <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+          <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hoa_tiet_sen_vang.svg" alt="" aria-hidden="true"
-          className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ height: "calc(100% - 8px)", width: "auto" }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hoa_tiet_cay_tre.svg" alt="" aria-hidden="true"
-          className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ height: "calc(100% - 8px)", width: "auto" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hoa_tiet_sen_vang.svg"
+            alt=""
+            aria-hidden="true"
+            className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ height: "calc(100% - 8px)", width: "auto" }}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hoa_tiet_cay_tre.svg"
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ height: "calc(100% - 8px)", width: "auto" }}
+          />
 
-        {/* Nav content — elevated above decorative elements */}
-        <div className="relative z-10 flex items-center justify-between px-16">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 border border-[#C8960C] flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <span className="text-[#C8960C] font-bold uppercase tracking-[0.25em] text-[13px] hidden sm:block">
-            Gia Phả Việt
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {shortAddress && (
-            <div className="flex items-center gap-2 bg-[#6B0000]/60 border border-[#C8960C]/30 px-3 py-1.5 rounded-sm">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[#C8960C]/80 text-[11px] font-mono tracking-wide">{shortAddress}</span>
+          {/* Nav content — elevated above decorative elements */}
+          <div className="relative z-10 flex items-center justify-between px-16">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 border border-[#C8960C] flex items-center justify-center flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#C8960C"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <span className="text-[#C8960C] font-bold uppercase tracking-[0.25em] text-[13px] hidden sm:block">
+                Gia Phả Việt
+              </span>
             </div>
-          )}
-          <button
-            onClick={handleDisconnect}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[#C8960C]/70 hover:text-[#F5EDD0] border border-[#C8960C]/30 hover:border-[#C8960C]/60 text-[11px] font-bold uppercase tracking-wider transition-all"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span className="hidden sm:inline">Đăng xuất</span>
-          </button>
-        </div>
-        </div>{/* end nav content wrapper */}
-      </nav>
 
-      <div aria-hidden="true" className="w-full flex-shrink-0"
-        style={{ height: 15, backgroundImage: "url(/hoa_tiet_vien_ngang.svg)", backgroundRepeat: "repeat-x", backgroundSize: "auto 15px" }} />
+            <div className="flex items-center gap-3">
+              {shortAddress && (
+                <div className="flex items-center gap-2 bg-[#6B0000]/60 border border-[#C8960C]/30 px-3 py-1.5 rounded-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[#C8960C]/80 text-[11px] font-mono tracking-wide">
+                    {shortAddress}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={handleDisconnect}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[#C8960C]/70 hover:text-[#F5EDD0] border border-[#C8960C]/30 hover:border-[#C8960C]/60 text-[11px] font-bold uppercase tracking-wider transition-all"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span className="hidden sm:inline">Đăng xuất</span>
+              </button>
+            </div>
+          </div>
+          {/* end nav content wrapper */}
+        </nav>
+
+        <div
+          aria-hidden="true"
+          className="w-full flex-shrink-0"
+          style={{
+            height: 15,
+            backgroundImage: "url(/hoa_tiet_vien_ngang.svg)",
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 15px",
+          }}
+        />
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-12 md:py-16">
-      {isLoading ? (
-        <div className="fixed inset-0 flex flex-col justify-center items-center bg-[#1A0505]/90 backdrop-blur-sm z-40">
-          {/* Spinner */}
-          <div className="relative w-24 h-24 mb-8">
-            {/* Outer ring — slow clockwise */}
-            <svg className="absolute inset-0 w-full h-full animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 96 96">
-              <circle cx="48" cy="48" r="44" fill="none" stroke="#3D0505" strokeWidth="2"/>
-              <circle cx="48" cy="48" r="44" fill="none" stroke="#C8960C" strokeWidth="2"
-                strokeDasharray="138 138" strokeDashoffset="103" strokeLinecap="round"/>
-            </svg>
-            {/* Middle ring — faster counter-clockwise */}
-            <svg className="absolute inset-3 w-[72px] h-[72px] animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} viewBox="0 0 72 72">
-              <circle cx="36" cy="36" r="32" fill="none" stroke="#3D0505" strokeWidth="1.5"/>
-              <circle cx="36" cy="36" r="32" fill="none" stroke="#C8960C" strokeWidth="1.5"
-                strokeDasharray="60 141" strokeLinecap="round"/>
-            </svg>
-            {/* Center icon */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-10 md:py-10">
+        {isLoading ? (
+          <div className="fixed inset-0 flex flex-col justify-center items-center bg-[#1A0505]/90 backdrop-blur-sm z-40">
+            {/* Spinner */}
+            <div className="relative w-24 h-24 mb-8">
+              {/* Outer ring — slow clockwise */}
+              <svg
+                className="absolute inset-0 w-full h-full animate-spin"
+                style={{ animationDuration: "3s" }}
+                viewBox="0 0 96 96"
+              >
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="44"
+                  fill="none"
+                  stroke="#3D0505"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="44"
+                  fill="none"
+                  stroke="#C8960C"
+                  strokeWidth="2"
+                  strokeDasharray="138 138"
+                  strokeDashoffset="103"
+                  strokeLinecap="round"
+                />
               </svg>
-            </div>
-          </div>
-
-          {/* Text */}
-          <p className="text-[#F5EDD0] text-sm font-serif uppercase tracking-[0.3em] animate-pulse mb-2">
-            Đang kết nối blockchain...
-          </p>
-          <p className="text-[#C8960C]/50 text-[11px] font-mono tracking-widest uppercase">
-            LUKSO Mainnet
-          </p>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
-
-          {/* Page header */}
-          <div className="w-full max-w-5xl text-center mb-12">
-            <p className="text-[#8B1A1A]/60 text-xs uppercase tracking-[0.3em] font-bold mb-3">
-              Kho lưu trữ dòng tộc
-            </p>
-            <h1 className="text-3xl md:text-4xl font-black text-[#8B1A1A] tracking-[0.15em] uppercase mb-4">
-              Gia Phả Của Bạn
-            </h1>
-            {/* Họa tiết trung tâm */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/hoa_tiet_trung_tam.svg"
-              alt=""
-              aria-hidden="true"
-              className="w-full max-w-lg mx-auto mb-5 block"
-              style={{ height: 52, objectFit: "contain" }}
-            />
-            <p className="text-[#8B1A1A]/70 italic text-base mb-6">
-              Cây có cội, nước có nguồn
-            </p>
-            {/* Stats badge */}
-            {allClanId.length > 0 && (
-              <div className="inline-flex items-center gap-2 bg-[#8B1A1A]/8 border border-[#C8960C]/30 px-4 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              {/* Middle ring — faster counter-clockwise */}
+              <svg
+                className="absolute inset-3 w-[72px] h-[72px] animate-spin"
+                style={{
+                  animationDuration: "2s",
+                  animationDirection: "reverse",
+                }}
+                viewBox="0 0 72 72"
+              >
+                <circle
+                  cx="36"
+                  cy="36"
+                  r="32"
+                  fill="none"
+                  stroke="#3D0505"
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx="36"
+                  cy="36"
+                  r="32"
+                  fill="none"
+                  stroke="#C8960C"
+                  strokeWidth="1.5"
+                  strokeDasharray="60 141"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {/* Center icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#C8960C"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
-                <span className="text-[#8B1A1A] text-[12px] font-bold tracking-wide">
-                  {allClanId.length} gia tộc đã đăng ký
+              </div>
+            </div>
+
+            {/* Text */}
+            <p className="text-[#F5EDD0] text-sm font-serif uppercase tracking-[0.3em] animate-pulse mb-2">
+              Đang kết nối blockchain...
+            </p>
+            <p className="text-[#C8960C]/50 text-[11px] font-mono tracking-widest uppercase">
+              LUKSO Mainnet
+            </p>
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
+            {/* Page header */}
+            <div className="w-full max-w-5xl text-center mb-10">
+              <p className="text-[#8B1A1A]/60 text-xs uppercase tracking-[0.3em] font-bold mb-3">
+                Kho lưu trữ dòng tộc
+              </p>
+              <h1 className="text-3xl md:text-4xl font-black text-[#8B1A1A] tracking-[0.15em] uppercase mb-2">
+                Gia Phả Của Bạn
+              </h1>
+              {/* Họa tiết trung tâm */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/hoa_tiet_trung_tam.svg"
+                alt=""
+                aria-hidden="true"
+                className="w-full max-w-lg mx-auto mb-2 block"
+                style={{ height: 36, objectFit: "contain" }}
+              />
+              <p className="text-[#8B1A1A]/70 italic text-base mb-2">
+                Cây có cội, nước có nguồn
+              </p>
+              {/* Stats badge */}
+              {/* {allClanId.length > 0 && (
+                <div className="inline-flex items-center gap-2 bg-[#8B1A1A]/8 border border-[#C8960C]/30 px-4 py-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C8960C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span className="text-[#8B1A1A] text-[12px] font-bold tracking-wide">
+                    {allClanId.length} gia tộc đã đăng ký
+                  </span>
+                </div>
+              )} */}
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl w-full">
+              {allClanId.map((clanId, index) => (
+                <ClanListItem clanId={clanId} key={index} />
+              ))}
+
+              {/* Add new card */}
+              <div
+                onClick={() => setIsModalOpen(true)}
+                className="border-2 border-dashed border-[#8B1A1A]/25 flex flex-col items-center justify-center aspect-[7/10] opacity-50 hover:opacity-100 hover:border-[#8B1A1A]/60 hover:bg-[#8B1A1A]/5 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="w-12 h-12 border-2 border-dashed border-[#8B1A1A]/40 flex items-center justify-center mb-3 group-hover:border-[#8B1A1A] group-hover:bg-[#8B1A1A] group-hover:text-[#C8960C] text-[#8B1A1A] transition-all">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+                <span className="font-bold text-[#8B1A1A] uppercase tracking-widest text-xs text-center">
+                  Khai báo
+                  <br />
+                  gia tộc mới
                 </span>
               </div>
-            )}
-          </div>
-
-          {/* Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl w-full">
-            {allClanId.map((clanId, index) => (
-              <ClanListItem clanId={clanId} key={index} />
-            ))}
-
-            {/* Add new card */}
-            <div
-              onClick={() => setIsModalOpen(true)}
-              className="border-2 border-dashed border-[#8B1A1A]/25 flex flex-col items-center justify-center aspect-[7/10] opacity-50 hover:opacity-100 hover:border-[#8B1A1A]/60 hover:bg-[#8B1A1A]/5 transition-all duration-300 cursor-pointer group"
-            >
-              <div className="w-12 h-12 border-2 border-dashed border-[#8B1A1A]/40 flex items-center justify-center mb-3 group-hover:border-[#8B1A1A] group-hover:bg-[#8B1A1A] group-hover:text-[#C8960C] text-[#8B1A1A] transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <span className="font-bold text-[#8B1A1A] uppercase tracking-widest text-xs text-center">
-                Khai báo<br />gia tộc mới
-              </span>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
 
       {/* Modal — Khai báo gia tộc */}
@@ -344,16 +517,39 @@ export default function ClanListForm({ userWalletAddress }) {
                   onClick={() => !isProcessing && setIsModalOpen(false)}
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-[#8B1A1A]/60 hover:text-[#8B1A1A] hover:bg-[#8B1A1A]/10 transition-all"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
 
                 {/* Clan icon */}
                 <div className="w-12 h-12 mx-auto mb-3 bg-[#8B1A1A] flex items-center justify-center shadow-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#C8960C"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </div>
 
@@ -361,18 +557,22 @@ export default function ClanListForm({ userWalletAddress }) {
                   Khai Báo Gia Tộc
                 </h2>
                 <p className="text-[#8B1A1A]/60 text-xs font-serif italic">
-                  Ghi danh dòng tộc vào sổ bộ — lưu truyền muôn đời trên chuỗi khối
+                  Ghi danh dòng tộc vào sổ bộ — lưu truyền muôn đời trên chuỗi
+                  khối
                 </p>
               </div>
 
               {/* ── FORM ── */}
               <form onSubmit={handleSubmit} className="px-8 py-7 space-y-7">
-
                 {/* ─── SECTION I: Dòng tộc ─── */}
                 <div>
                   <div className="flex items-center gap-2.5 mb-5">
-                    <span className="w-6 h-6 bg-[#8B1A1A] text-[#C8960C] flex items-center justify-center text-[10px] font-bold flex-shrink-0">I</span>
-                    <span className="text-[11px] font-bold text-[#8B1A1A] uppercase tracking-[0.22em]">Thông tin Dòng tộc</span>
+                    <span className="w-6 h-6 bg-[#8B1A1A] text-[#C8960C] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      I
+                    </span>
+                    <span className="text-[11px] font-bold text-[#8B1A1A] uppercase tracking-[0.22em]">
+                      Thông tin Dòng tộc
+                    </span>
                     <div className="flex-1 h-px bg-[#8B1A1A]/20" />
                   </div>
 
@@ -412,8 +612,12 @@ export default function ClanListForm({ userWalletAddress }) {
                 {/* ─── SECTION II: Thủy tổ ─── */}
                 <div>
                   <div className="flex items-center gap-2.5 mb-5">
-                    <span className="w-6 h-6 bg-[#8B1A1A] text-[#C8960C] flex items-center justify-center text-[10px] font-bold flex-shrink-0">II</span>
-                    <span className="text-[11px] font-bold text-[#8B1A1A] uppercase tracking-[0.22em]">Thông tin Thủy tổ</span>
+                    <span className="w-6 h-6 bg-[#8B1A1A] text-[#C8960C] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      II
+                    </span>
+                    <span className="text-[11px] font-bold text-[#8B1A1A] uppercase tracking-[0.22em]">
+                      Thông tin Thủy tổ
+                    </span>
                     <div className="flex-1 h-px bg-[#8B1A1A]/20" />
                   </div>
 
@@ -488,7 +692,9 @@ export default function ClanListForm({ userWalletAddress }) {
 
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <label className={`text-[11px] font-bold uppercase tracking-wider transition-colors ${isStillAlive ? "text-[#8B1A1A]/40" : "text-[#8B1A1A]/80"}`}>
+                          <label
+                            className={`text-[11px] font-bold uppercase tracking-wider transition-colors ${isStillAlive ? "text-[#8B1A1A]/40" : "text-[#8B1A1A]/80"}`}
+                          >
                             Năm / Ngày mất
                           </label>
                           <button
@@ -501,7 +707,9 @@ export default function ClanListForm({ userWalletAddress }) {
                                 : "bg-stone-100 border-stone-300 text-stone-500"
                             }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${isStillAlive ? "bg-emerald-500" : "bg-stone-400"}`} />
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${isStillAlive ? "bg-emerald-500" : "bg-stone-400"}`}
+                            />
                             {isStillAlive ? "Còn sống" : "Đã mất"}
                           </button>
                         </div>
@@ -510,7 +718,9 @@ export default function ClanListForm({ userWalletAddress }) {
                           name="deathDate"
                           disabled={isStillAlive || isProcessing}
                           onChange={handleInputChange}
-                          placeholder={isStillAlive ? "—" : "VD: 1895 hoặc 15/03/1895"}
+                          placeholder={
+                            isStillAlive ? "—" : "VD: 1895 hoặc 15/03/1895"
+                          }
                           className={`w-full border px-3.5 py-2.5 outline-none text-sm transition-all ${
                             isStillAlive
                               ? "bg-stone-50 border-stone-200 text-stone-400 cursor-not-allowed"
@@ -553,7 +763,19 @@ export default function ClanListForm({ userWalletAddress }) {
                       </>
                     ) : (
                       <>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
                         <span>Xác nhận khởi tạo</span>
                       </>
                     )}
@@ -561,7 +783,20 @@ export default function ClanListForm({ userWalletAddress }) {
 
                   {/* Blockchain note */}
                   <div className="flex items-center justify-center gap-2 mt-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#8B1A1A"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
                     <p className="text-[10px] text-[#8B1A1A]/50 italic">
                       Giao dịch sẽ được ký và lưu vĩnh viễn trên LUKSO Mainnet
                     </p>

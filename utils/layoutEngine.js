@@ -113,7 +113,7 @@ export const getLayoutedElements = (nodes, edges, showFemales) => {
 
       // Nếu ẩn nữ giới, spouseCount sẽ bằng 0 và width tự động thu về 220px
       width = 220 + spouseCount * 220;
-      height = 150;
+      height = 310; // 220px * (655/464) theo aspect-ratio của personal_card.png
     }
     dagreGraph.setNode(node.id, { width, height });
   });

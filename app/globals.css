@@ -19,7 +19,7 @@
 
 /* Tinh chỉnh React Flow để đồng bộ với v4 */
 .react-flow__background {
-  background-color: #e8d5b5;
+  background-color: transparent;
 }
 
 .react-flow__edge-path {

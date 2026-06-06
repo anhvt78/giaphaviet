@@ -10,12 +10,22 @@ export default function PersonCard({ person, subTitle, isMain, onNodeSelect }) {
         e.stopPropagation();
         if (onNodeSelect) onNodeSelect(person);
       }}
-      className={`w-55 p-5 shadow-2xl transition-all cursor-pointer bg-transparent bg-cover bg-center bg-no-repeat
+      className={`w-55 p-5 transition-all cursor-pointer bg-transparent bg-cover bg-center bg-no-repeat
         ${isMain ? "scale-100" : "scale-100 opacity-90"}`}
-      style={{ backgroundImage: "url(/images/personal_card.png)", aspectRatio: "464 / 655" }}
+      style={{
+        backgroundImage: "url(/images/personal_card.png)",
+        aspectRatio: "464 / 655",
+        WebkitMaskImage: "url(/images/personal_card.png)",
+        WebkitMaskSize: "cover",
+        WebkitMaskRepeat: "no-repeat",
+        maskImage: "url(/images/personal_card.png)",
+        maskSize: "cover",
+        maskRepeat: "no-repeat",
+        filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.35))",
+      }}
     >
       <div className="flex flex-col items-center font-serif text-[#3d2611]">
-        <div className="text-[9px] uppercase tracking-[0.2em] mb-1 opacity-60">
+        <div className="pt-4 text-[9px] uppercase tracking-[0.2em] mb-1 opacity-60">
           {subTitle}
         </div>
         <div className="text-lg font-bold border-b border-[#8b5a2b]/40 pb-1 w-full text-center tracking-tight uppercase">

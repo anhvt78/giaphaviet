@@ -22,6 +22,10 @@
   background-color: transparent;
 }
 
+.react-flow__node {
+  background: transparent !important;
+}
+
 .react-flow__edge-path {
   stroke: #5d3a1a !important;
   stroke-width: 2;

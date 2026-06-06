@@ -17,6 +17,21 @@ import sweetalert2 from "@/configs/swal";
 import Swal from "sweetalert2";
 import { generateMetadataLink } from "@/components/Utils/helpers";
 
+const GENERATION_LABELS = {
+  1: "Tiên tổ", 2: "Nhị đại tôn", 3: "Tam đại tôn", 4: "Tứ đại tôn",
+  5: "Ngũ đại tôn", 6: "Lục đại tôn", 7: "Thất đại tôn",
+  8: "Bát đại tôn", 9: "Cửu đại tôn", 10: "Thập đại tôn",
+};
+
+function getSubTitle(person) {
+  if (person.isSpouse) return person.gender === "male" ? "Phu quân" : "Phu nhân";
+  const gen = person.generation ?? 1;
+  if (gen === 1) return person.gender === "female" ? "Thái Tiên tổ" : "Tiên tổ";
+  if (gen === 2) return person.gender === "female" ? "Nhị đại tôn nữ" : "Nhị đại tôn";
+  const baseLabel = GENERATION_LABELS[gen] ?? `Đời thứ ${gen}`;
+  return person.gender === "female" ? `${baseLabel} nữ` : baseLabel;
+}
+
 const ANCESTOR_ID =
   "0x0000000000000000000000000000000000000000000000000000000000000001";
 
@@ -108,6 +123,7 @@ export default function DetailSidebar({
     targetId: null,
   });
 
+  const [activeTab, setActiveTab] = useState("info");
   const [modalAddChildState, setModalAddChildState] = useState(false);
   const [modalUpdateState, setModalUpdateState] = useState(false);
   const [modalExternalSpouseOpen, setModalExternalSpouseOpen] = useState(false);
@@ -319,7 +335,7 @@ export default function DetailSidebar({
   return (
     <div
       style={{ width: `${width}px` }}
-      className="fixed top-0 right-0 h-full bg-[#fdf8e9] border-l-4 border-[#5d3a1a] shadow-2xl z-[50] flex flex-col transition-[width] duration-68 ease-out"
+      className="fixed top-0 right-0 h-full bg-[#fdf8e9] border-l-4 border-[#5d3a1a] shadow-2xl z-[50] flex flex-col transition-[width] duration-68 ease-out overflow-hidden"
     >
       {currentIndex !== null && (
         <div
@@ -398,275 +414,213 @@ export default function DetailSidebar({
         className="absolute left-[-4px] top-0 w-2 h-full cursor-col-resize hover:bg-[#8b5a2b]/30 transition-colors z-[60]"
         title="Kéo để thay đổi kích thước"
       />
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-        {/* DROPDOWN MENU - GÓC TRÊN BÊN TRÁI */}
-        {isProcessing ? (
-          <>
-            {userWalletAddress && (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#3d2611]"></div>
-            )}
-          </>
-        ) : (
-          <>
-            {owner === userWalletAddress && (
-              <div className="absolute top-4 left-4 z-[70]">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center gap-2 bg-[#8b5a2b] text-[#f2e2ba] px-3 py-1.5 rounded shadow-md hover:bg-[#5d3a1a] transition-all text-xs font-bold uppercase"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="12" cy="5" r="1"></circle>
-                    <circle cx="12" cy="19" r="1"></circle>
-                  </svg>
-                  Tùy chọn
-                </button>
-
-                {isMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[-1]"
-                      onClick={() => setIsMenuOpen(false)}
-                    ></div>
-
-                    <div className="absolute left-0 mt-2 w-56 bg-white border border-[#8b5a2b]/20 shadow-xl rounded-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                      {/* Nhóm: Thêm mới */}
-                      {!person.isSpouse && (
-                        <>
-                          <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-b border-[#8b5a2b]/10">
-                            Thêm thành viên
-                          </div>
-                          <button
-                            onClick={() => {
-                              setModalAddChildState(true);
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
-                          >
-                            <span className="text-lg">+</span> Thêm con cái
-                          </button>
-
-                          {person.gender === "male" ? (
-                            <button
-                              onClick={() => {
-                                setModalState({
-                                  isOpen: true,
-                                  type: "spouse",
-                                  targetId: person.id,
-                                });
-                                setIsMenuOpen(false);
-                              }}
-                              className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
-                            >
-                              <span className="text-lg">+</span> Thêm Phu nhân
-                              (Vợ)
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setModalState({
-                                  isOpen: true,
-                                  type: "spouse",
-                                  targetId: person.id,
-                                });
-                                setIsMenuOpen(false);
-                              }}
-                              className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
-                            >
-                              <span className="text-lg">+</span> Thêm Phu Quân
-                              (Chồng)
-                            </button>
-                          )}
-                        </>
-                      )}
-
-                      {/* Phối ngẫu ngoài — non-spouse only */}
-                      {!person.isSpouse && (
-                        <button
-                          onClick={() => { setModalExternalSpouseOpen(true); setIsMenuOpen(false); }}
-                          className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                          </svg>
-                          Thêm phối ngẫu ngoài gia phả
-                        </button>
-                      )}
-
-                      {/* Nhóm: Chỉnh sửa */}
-                      <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-y border-[#8b5a2b]/10">
-                        Quản lý
+      {/* Dropdown quản lý - góc trên trái */}
+      {isProcessing && userWalletAddress && (
+        <div className="absolute top-4 left-4 z-[70]">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#3d2611]"></div>
+        </div>
+      )}
+      {!isProcessing && owner === userWalletAddress && (
+          <div className="absolute top-4 left-4 z-[70]">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="flex items-center gap-2 bg-[#8b5a2b] text-[#f2e2ba] px-3 py-1.5 rounded shadow-md hover:bg-[#5d3a1a] transition-all text-xs font-bold uppercase"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+              Tùy chọn
+            </button>
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-[-1]" onClick={() => setIsMenuOpen(false)}></div>
+                <div className="absolute left-0 mt-2 w-56 bg-white border border-[#8b5a2b]/20 shadow-xl rounded-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                  {!person.isSpouse && (
+                    <>
+                      <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-b border-[#8b5a2b]/10">
+                        Thêm thành viên
                       </div>
-
-                      <button
-                        onClick={() => {
-                          // Logic mở modal cập nhật của bạn ở đây
-                          // console.log("Mở modal cập nhật cho:", person.id);
-                          setIsMenuOpen(false);
-                          setModalUpdateState(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        Cập nhật thông tin
+                      <button onClick={() => { setModalAddChildState(true); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                        <span className="text-lg">+</span> Thêm con cái
                       </button>
-                      {!person?.hasChildren && person?.id != ANCESTOR_ID && (
-                        <button
-                          onClick={() => {
-                            // if (
-                            //   window.confirm(
-                            //     `Bạn có chắc chắn muốn xóa ${person.name} khỏi gia phả? Hành động này không thể hoàn tác.`,
-                            //   )
-                            // ) {
-                            //   // Logic xóa của bạn ở đây
-                            //   console.log("Xóa thành viên:", person.id);
-                            // }
-                            handleDelete();
-                            setIsMenuOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
-                          Xóa khỏi gia phả
+                      {person.gender === "male" ? (
+                        <button onClick={() => { setModalState({ isOpen: true, type: "spouse", targetId: person.id }); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                          <span className="text-lg">+</span> Thêm Phu nhân (Vợ)
+                        </button>
+                      ) : (
+                        <button onClick={() => { setModalState({ isOpen: true, type: "spouse", targetId: person.id }); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                          <span className="text-lg">+</span> Thêm Phu Quân (Chồng)
                         </button>
                       )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[#8b5a2b] hover:text-[#3d2611] transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        {person && (
-          <div className="p-8 h-full flex flex-col">
-            <div className="flex-grow overflow-y-auto pr-2">
-              <div className="flex flex-col items-center mb-8">
-                <div className="w-28 h-28 rounded-full bg-[#8b5a2b]/10 border-4 border-[#8b5a2b]/30 flex items-center justify-center mb-4 shadow-inner overflow-hidden">
-                  {personDetail?.allImageUrls &&
-                  personDetail.allImageUrls.length > 0 ? (
-                    <img
-                      src={personDetail.allImageUrls[0]}
-                      alt={person.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-5xl">
-                      {person.gender === "male" ? "👴" : "👵"}
-                    </span>
+                    </>
+                  )}
+                  {!person.isSpouse && (
+                    <button onClick={() => { setModalExternalSpouseOpen(true); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                      </svg>
+                      Thêm phối ngẫu ngoài gia phả
+                    </button>
+                  )}
+                  <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-y border-[#8b5a2b]/10">
+                    Quản lý
+                  </div>
+                  <button onClick={() => { setIsMenuOpen(false); setModalUpdateState(true); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Cập nhật thông tin
+                  </button>
+                  {!person?.hasChildren && person?.id != ANCESTOR_ID && (
+                    <button onClick={() => { handleDelete(); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                      Xóa khỏi gia phả
+                    </button>
                   )}
                 </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-[#8b5a2b] uppercase tracking-[0.3em] mb-1 font-bold">
-                    {person.gender === "male"
-                      ? "Thành viên Nam"
-                      : "Thành viên Nữ"}
-                  </p>
-                  <h2 className="text-2xl font-bold text-[#3d2611] uppercase tracking-tight">
-                    {person.name}
-                  </h2>
-                </div>
-              </div>
+              </>
+            )}
+          </div>
+      )}
 
-              <div className="space-y-6">
+      {/* Nút đóng - góc trên phải */}
+      <button onClick={onClose} className="absolute top-4 right-4 z-[70] text-[#8b5a2b] hover:text-[#3d2611] transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      {/* Modals */}
+      {modalState.isOpen && (
+        <AddSpouseModal
+          onClose={() => setModalState({ isOpen: false, type: null, targetId: null })}
+          person={person}
+          clanItem={clanItem}
+          type={modalState.type}
+          fetchDataDialog={fetchDataDialog}
+        />
+      )}
+      {modalAddChildState && (
+        <AddChildModal
+          onClose={() => setModalAddChildState(false)}
+          person={person}
+          clanItem={clanItem}
+          type={modalState.type}
+          fetchDataDialog={fetchDataDialog}
+        />
+      )}
+      {modalUpdateState && (
+        <UpdateMemberModal
+          onClose={() => setModalUpdateState(false)}
+          person={person}
+          clanItem={clanItem}
+          fetchDataDialog={fetchDataDialog}
+        />
+      )}
+      {modalExternalSpouseOpen && (
+        <AddExternalSpouseModal
+          onClose={() => setModalExternalSpouseOpen(false)}
+          person={person}
+          clanItem={clanItem}
+          fetchDataDialog={fetchDataDialog}
+        />
+      )}
+
+      {/* Nội dung chính */}
+      {person && (
+        <>
+          {/* Header: Avatar + Tên + Vai trò */}
+          <div className="flex-shrink-0 flex flex-col items-center pt-12 pb-5 px-6 border-b border-[#8b5a2b]/20">
+            <div className="w-24 h-24 rounded-full bg-[#8b5a2b]/10 border-4 border-[#8b5a2b]/30 flex items-center justify-center mb-3 shadow-inner overflow-hidden">
+              {personDetail?.allImageUrls && personDetail.allImageUrls.length > 0 ? (
+                <img src={personDetail.allImageUrls[0]} alt={person.name} className="w-full h-full object-cover" />
+              ) : person.gender === "male" ? (
+                <svg viewBox="0 0 80 80" className="w-14 h-14" fill="#8b5a2b" opacity="0.45">
+                  <circle cx="40" cy="26" r="16"/>
+                  <path d="M8 76 Q8 52 40 52 Q72 52 72 76Z"/>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 80 80" className="w-14 h-14" fill="#8b5a2b" opacity="0.45">
+                  <circle cx="40" cy="26" r="16"/>
+                  <path d="M12 76 Q12 50 40 50 Q68 50 68 76Z"/>
+                  <path d="M18 63 Q40 71 62 63" stroke="#8b5a2b" fill="none" strokeWidth="3" opacity="0.6"/>
+                </svg>
+              )}
+            </div>
+            <p className="text-[9px] text-[#8b5a2b] uppercase tracking-[0.3em] font-bold mb-1">
+              {getSubTitle(person)}
+            </p>
+            <h2 className="text-xl font-bold text-[#3d2611] uppercase tracking-tight text-center leading-tight">
+              {person.name}
+            </h2>
+            <span className={`mt-2 inline-block px-3 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-full border ${
+              person.isDeceased
+                ? "bg-stone-200 text-stone-600 border-stone-400"
+                : "bg-green-50 text-green-700 border-green-300"
+            }`}>
+              {person.isDeceased ? "Đã qua đời" : "Còn sống"}
+            </span>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex-shrink-0 flex border-b border-[#8b5a2b]/20">
+            <button
+              onClick={() => setActiveTab("info")}
+              className={`flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                activeTab === "info"
+                  ? "text-[#5d3a1a] border-b-2 border-[#5d3a1a]"
+                  : "text-[#8b5a2b]/50 hover:text-[#8b5a2b]"
+              }`}
+            >
+              Thông tin
+            </button>
+            <button
+              onClick={() => setActiveTab("images")}
+              className={`flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                activeTab === "images"
+                  ? "text-[#5d3a1a] border-b-2 border-[#5d3a1a]"
+                  : "text-[#8b5a2b]/50 hover:text-[#8b5a2b]"
+              }`}
+            >
+              Hình ảnh{personDetail?.allImageUrls?.length > 0 ? ` (${personDetail.allImageUrls.length})` : ""}
+            </button>
+          </div>
+
+          {/* Nội dung tab */}
+          <div className="flex-grow overflow-y-auto custom-scrollbar p-5">
+            {activeTab === "info" && (
+              <div className="space-y-5">
+                {/* Thông tin cơ bản */}
                 <section>
-                  <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                  <h3 className="text-[10px] font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
                     Thông tin cơ bản
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white/50 p-3 rounded border border-[#8b5a2b]/10">
-                      <p className="text-[10px] text-[#8b5a2b] uppercase">
-                        Năm sinh
-                      </p>
-                      <p className="font-bold text-[#3d2611]">
-                        {formatDate(person.birthDate)}
-                      </p>
+                      <p className="text-[9px] text-[#8b5a2b] uppercase mb-0.5">Năm sinh</p>
+                      <p className="font-bold text-[#3d2611] text-sm">{formatDate(person.birthDate)}</p>
                     </div>
                     <div className="bg-white/50 p-3 rounded border border-[#8b5a2b]/10">
-                      <p className="text-[10px] text-[#8b5a2b] uppercase">
-                        Năm mất
-                      </p>
-                      <p className="font-bold text-[#3d2611]">
-                        {formatDate(person.deathDate)}
-                      </p>
+                      <p className="text-[9px] text-[#8b5a2b] uppercase mb-0.5">Năm mất</p>
+                      <p className="font-bold text-[#3d2611] text-sm">{formatDate(person.deathDate)}</p>
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <span
-                      className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${
-                        person.isDeceased
-                          ? "bg-stone-200 text-stone-600 border-stone-400"
-                          : "bg-green-50 text-green-700 border-green-300"
-                      }`}
-                    >
-                      {person.isDeceased ? "Đã qua đời" : "Còn sống"}
-                    </span>
                   </div>
                 </section>
 
-                {/* External spouses section */}
+                {/* Phối ngẫu ngoài gia phả */}
                 {(person.externalSpouses?.length > 0 || (owner === userWalletAddress && !person.isSpouse)) && (
                   <section>
-                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                    <h3 className="text-[10px] font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
                       Phối ngẫu ngoài gia phả
                     </h3>
                     {person.externalSpouses?.length > 0 ? (
@@ -710,10 +664,10 @@ export default function DetailSidebar({
                   </section>
                 )}
 
-                {/* Person origin section */}
+                {/* Nguồn gốc xuyên gia phả */}
                 {personOrigin && (
                   <section>
-                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                    <h3 className="text-[10px] font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
                       Nguồn gốc xuyên gia phả
                     </h3>
                     <div className="bg-white/60 border border-[#8b5a2b]/15 px-3 py-2.5 rounded space-y-1.5">
@@ -734,10 +688,10 @@ export default function DetailSidebar({
                   </section>
                 )}
 
-                {/* Equivalents section */}
+                {/* Thành viên tương đương */}
                 {equivalents.length > 0 && (
                   <section>
-                    <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                    <h3 className="text-[10px] font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
                       Thành viên tương đương
                     </h3>
                     <div className="space-y-2">
@@ -761,207 +715,88 @@ export default function DetailSidebar({
                   </section>
                 )}
 
-                {person.shortDesc && (
-                  <section>
-                    {/* Thẻ div bao ngoài để căn lề giữa text và icon */}
-                    <div className="flex items-center justify-between border-b border-[#8b5a2b]/20 pb-1 mb-3">
-                      <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest">
-                        Thông tin sơ lược
-                      </h3>
+                {/* Tiểu sử & Ghi chép - gộp shortDesc + description */}
+                <section>
+                  <div className="flex items-center justify-between border-b border-[#8b5a2b]/20 pb-1 mb-3">
+                    <h3 className="text-[10px] font-bold text-[#8b5a2b] uppercase tracking-widest">
+                      Tiểu sử & Ghi chép
+                    </h3>
+                    {owner === userWalletAddress && (
+                      <a
+                        href={`https://universaleverything.io/asset/${clanItem.clanId}/tokenId/${person.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex border border-[#8b5a2b]/10 size-8 items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-105 hover:bg-[#8b5a2b]/10"
+                        title="Cập nhật thông tin chi tiết trên Blockchain"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9.20522 17.4916L18.5695 8.12731C18.9601 7.73679 18.9601 7.10362 18.5695 6.7131L16.5635 4.70704C16.173 4.31652 15.5398 4.31652 15.1493 4.70704L5.78495 14.0714C5.64561 14.2107 5.55055 14.3881 5.51169 14.5813L5.00661 17.0924C4.86572 17.7929 5.48368 18.4109 6.18417 18.27L8.6953 17.7649C8.88848 17.726 9.06588 17.631 9.20522 17.4916Z"></path>
+                          <path d="M13.2913 6.28015L16.7115 9.70042"></path>
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                  {isGettingMetadata ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#8b5a2b]"></div>
                     </div>
-
-                    <div className="relative">
-                      <span className="absolute top-0 left-0 text-4xl text-[#8b5a2b]/20 font-serif">
-                        “
-                      </span>
-                      <p className="text-[#3d2611] italic leading-relaxed pt-4 px-4 text-sm">
-                        {person.shortDesc ||
-                          "Chưa có dữ liệu tiểu sử ghi chép cho thành viên này."}
-                      </p>
-                      <span className="absolute bottom-0 right-0 text-4xl text-[#8b5a2b]/20 font-serif">
-                        ”
-                      </span>
+                  ) : (
+                    <div className="space-y-3">
+                      {person.shortDesc && (
+                        <div className="bg-white/40 rounded p-3 border border-[#8b5a2b]/10">
+                          <p className="text-[9px] text-[#8b5a2b] uppercase font-bold mb-1.5 tracking-wider">Sơ lược</p>
+                          <p className="text-[#3d2611] italic leading-relaxed text-sm">{person.shortDesc}</p>
+                        </div>
+                      )}
+                      <div className="bg-white/40 rounded p-3 border border-[#8b5a2b]/10">
+                        <p className="text-[9px] text-[#8b5a2b] uppercase font-bold mb-1.5 tracking-wider">Chi tiết</p>
+                        <p className="text-[#3d2611] italic leading-relaxed text-sm">
+                          {personDetail?.description || "Chưa có dữ liệu tiểu sử ghi chép cho thành viên này."}
+                        </p>
+                      </div>
                     </div>
-                  </section>
-                )}
+                  )}
+                </section>
+              </div>
+            )}
 
+            {activeTab === "images" && (
+              <div>
                 {isGettingMetadata ? (
-                  /* Hiệu ứng loading cho Avatar */
-                  // <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8b5a2b]"></div>
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8b5a2b]"></div>
                   </div>
+                ) : personDetail?.allImageUrls?.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {personDetail.allImageUrls.map((img, index) => (
+                      <div
+                        key={index}
+                        className="aspect-square overflow-hidden border-2 border-[#5d3a1a] shadow-md group cursor-pointer"
+                        onClick={() => setCurrentIndex(index)}
+                      >
+                        <img
+                          src={img}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          alt={`gallery-${index}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <>
-                    <section>
-                      {/* Thẻ div bao ngoài để căn lề giữa text và icon */}
-                      <div className="flex items-center justify-between border-b border-[#8b5a2b]/20 pb-1 mb-3">
-                        <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest">
-                          Thông tin Tiểu sử
-                        </h3>
-                        {owner === userWalletAddress && (
-                          <a
-                            href={`https://universaleverything.io/asset/${clanItem.clanId}/tokenId/${person.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex border border-[#8b5a2b]/10 size-10 items-center justify-center rounded-full transition-all duration-300 bg-neutral-97 cursor-pointer hover:scale-105 hover:bg-neutral-95"
-                            title="Cập nhật thông tin chi tiết trên Blockchain"
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              style={{ width: "24px", height: "24px" }}
-                            >
-                              <path
-                                d="M9.20522 17.4916L18.5695 8.12731C18.9601 7.73679 18.9601 7.10362 18.5695 6.7131L16.5635 4.70704C16.173 4.31652 15.5398 4.31652 15.1493 4.70704L5.78495 14.0714C5.64561 14.2107 5.55055 14.3881 5.51169 14.5813L5.00661 17.0924C4.86572 17.7929 5.48368 18.4109 6.18417 18.27L8.6953 17.7649C8.88848 17.726 9.06588 17.631 9.20522 17.4916Z"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              ></path>
-                              <path
-                                d="M13.2913 6.28015L16.7115 9.70042"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              ></path>
-                            </svg>
-                          </a>
-                        )}
-                      </div>
-
-                      <div className="relative">
-                        <span className="absolute top-0 left-0 text-4xl text-[#8b5a2b]/20 font-serif">
-                          “
-                        </span>
-                        <p className="text-[#3d2611] italic leading-relaxed pt-4 px-4 text-sm">
-                          {personDetail?.description ||
-                            "Chưa có dữ liệu tiểu sử ghi chép cho thành viên này."}
-                        </p>
-                        <span className="absolute bottom-0 right-0 text-4xl text-[#8b5a2b]/20 font-serif">
-                          ”
-                        </span>
-                      </div>
-                    </section>
-
-                    <section>
-                      <h3 className="text-xs font-bold text-[#8b5a2b] uppercase tracking-widest border-b border-[#8b5a2b]/20 pb-1 mb-3">
-                        Bộ sưu tập hình ảnh
-                      </h3>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {personDetail?.allImageUrls.map((img, index) => (
-                          <div
-                            key={index}
-                            className="h-40 overflow-hidden border-2 border-[#5d3a1a] shadow-md group"
-                            onClick={() => setCurrentIndex(index)} // Truyền index vào state
-                          >
-                            <img
-                              src={img}
-                              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 cursor-pointer"
-                              alt={`gallery-${index}`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  </>
+                  <div className="flex flex-col items-center justify-center py-16 text-[#8b5a2b]/40">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <p className="text-[11px] italic mt-3">Chưa có hình ảnh</p>
+                  </div>
                 )}
               </div>
-            </div>
-
-            {/* Cụm nút thao tác ở dưới cùng */}
-            {/* {owner == userWalletAddress && (
-              <div className="mt-6 pt-6 border-t-2 border-[#8b5a2b]/20 flex flex-col gap-3">
-                <button
-                  onClick={() => setModalAddChildState(true)}
-                  className="w-full bg-[#5d3a1a] text-[#f2e2ba] py-3 rounded font-bold text-xs hover:bg-black transition-all shadow-md uppercase tracking-wider"
-                >
-                  + Thêm con trực hệ
-                </button>
-
-                {person.gender === "male" && (
-                  <button
-                    onClick={() =>
-                      setModalState({
-                        isOpen: true,
-                        type: "child",
-                        targetId: person.id,
-                      })
-                    }
-                    className="w-full bg-[#8b5a2b] text-[#f2e2ba] py-3 rounded font-bold text-xs hover:bg-[#3d2611] transition-all shadow-md uppercase tracking-wider"
-                  >
-                    + Thêm{" "}
-                    {person.gender === "male"
-                      ? "Phu nhân (Vợ)"
-                      : "Phu quân (Chồng)"}
-                  </button>
-                )}
-              </div>
-            )} */}
+            )}
           </div>
-        )}
-
-        {modalState.isOpen && (
-          <AddSpouseModal
-            // isOpen={modalState.isOpen}
-            onClose={() =>
-              setModalState({ isOpen: false, type: null, targetId: null })
-            }
-            // onAdd={(newData) => {
-            //   setFamilyData([
-            //     ...familyData,
-            //     { ...newData, id: Date.now().toString() },
-            //   ]);
-            //   setModalState({ isOpen: false, type: null, targetId: null });
-            // }}
-            person={person}
-            clanItem={clanItem}
-            type={modalState.type}
-            fetchDataDialog={fetchDataDialog}
-            // targetId={modalState.targetId}
-          />
-        )}
-
-        {modalAddChildState && (
-          <AddChildModal
-            // isOpen={modalState.isOpen}
-            onClose={() => setModalAddChildState(false)}
-            // onAdd={(newData) => {
-            //   setFamilyData([
-            //     ...familyData,
-            //     { ...newData, id: Date.now().toString() },
-            //   ]);
-            //   setModalState({ isOpen: false, type: null, targetId: null });
-            // }}
-            person={person}
-            clanItem={clanItem}
-            type={modalState.type}
-            fetchDataDialog={fetchDataDialog}
-            // targetId={modalState.targetId}
-          />
-        )}
-        {modalUpdateState && (
-          <UpdateMemberModal
-            onClose={() => setModalUpdateState(false)}
-            person={person}
-            clanItem={clanItem}
-            fetchDataDialog={fetchDataDialog}
-          />
-        )}
-        {modalExternalSpouseOpen && (
-          <AddExternalSpouseModal
-            onClose={() => setModalExternalSpouseOpen(false)}
-            person={person}
-            clanItem={clanItem}
-            fetchDataDialog={fetchDataDialog}
-          />
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

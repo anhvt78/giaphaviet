@@ -7,10 +7,11 @@ import React, {
   Suspense,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import GenealogyDetailForm from "@/app/Forms/GenealogyDetailForm";
 import GenealogyDiagramForm from "@/app/Forms/GenealogyDiagramForm";
 import GenealogyStatisticsForm from "@/app/Forms/GenealogyStatisticsForm";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import sweetalert2 from "@/configs/swal";
 import { GenealogyContext } from "@/context/GenealogyContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,8 +23,6 @@ import {
 } from "@/components/Utils/helpers";
 import { useTheme } from "@/context/ThemeContext";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
-import Lottie from "lottie-react";
-import gettingDataAnimation from "../../assets/animations/gettingData.json";
 
 const NONE_ID =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -38,6 +37,8 @@ function GenealogyDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const clanId = searchParams.get("id");
+  const t = useTranslations("DetailPage");
+  const tCommon = useTranslations("Common");
 
   const { isClassical } = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
@@ -124,7 +125,7 @@ function GenealogyDetailContent() {
               .filter((url) => url);
           }
         } catch (error) {
-          router.push(`/`);
+          router.push("/");
         }
 
         const item = {
@@ -139,17 +140,17 @@ function GenealogyDetailContent() {
         setClanItem(item);
       } else {
         sweetalert2.popupAlert({
-          title: "Đã xảy ra lỗi",
-          text: "Lỗi khi tải thông tin Gia phả. Vui lòng kiểm tra lại thông tin địa chỉ dòng họ!",
+          title: t("loadError"),
+          text: t("loadErrorText"),
         });
-        router.push(`/`);
+        router.push("/");
       }
     } catch (err) {
       sweetalert2.popupAlert({
-        title: "Đã xảy ra lỗi",
-        text: "Lỗi khi tải thông tin Gia phả. Vui lòng kiểm tra lại thông tin địa chỉ dòng họ!",
+        title: t("loadError"),
+        text: t("loadErrorText"),
       });
-      router.push(`/`);
+      router.push("/");
     } finally {
       setLoadingClanDetail(false);
     }
@@ -160,29 +161,21 @@ function GenealogyDetailContent() {
     const ancestorId = numberToByte32(1);
     const tempList = [];
 
-    // ✅ FIX 1: Thêm tham số generation (mặc định = 1 cho tiên tổ)
     const traverse = async (personId, generation = 1) => {
       try {
         const result = await getPersonData(clanId, personId);
 
-        console.log("167. result: ", result);
-
         if (!result.sts) {
-          throw new Error(
-            `Không thể tải dữ liệu cho cá nhân có ID: ${personId}. Xin vui lòng kiểm tra lại!`,
-          );
+          throw new Error(`Failed to load person ID: ${personId}`);
         }
 
         const data = result.data;
 
-        // Xử lý Spouses
         const spousesDetails = await Promise.all(
           data.spouses.map(async (el) => {
             const spouseResult = await getPersonData(clanId, el);
             if (!spouseResult.sts) {
-              throw new Error(
-                `Lỗi khi tải thông tin vợ/chồng của ${data.name}`,
-              );
+              throw new Error(`Error loading spouse data`);
             }
             return {
               id: el,
@@ -218,9 +211,6 @@ function GenealogyDetailContent() {
 
         tempList.push(item);
 
-        console.log("159. data.children: ", data.children);
-
-        // ✅ FIX 1: Đệ quy con với generation + 1
         if (data.children && data.children.length > 0) {
           await Promise.all(
             data.children.map((childId) => traverse(childId, generation + 1)),
@@ -235,12 +225,9 @@ function GenealogyDetailContent() {
       await traverse(ancestorId, 1);
       setFamilyData(tempList);
     } catch (error) {
-      console.error("Gia phả bị gián đoạn:", error);
       sweetalert2.popupAlert({
-        title: "Lỗi cấu trúc Gia phả",
-        text:
-          error.message ||
-          "Có lỗi xảy ra trong quá trình truy vấn cây gia phả.",
+        title: t("structureError"),
+        text: error.message || "An error occurred while querying the family tree.",
         icon: "error",
       });
     } finally {
@@ -250,8 +237,7 @@ function GenealogyDetailContent() {
 
   return (
     <div className="w-full h-screen bg-[#F5EDD0] flex flex-col overflow-hidden font-serif relative">
-      {/* ── SHARED TOP NAVBAR ── */}
-      {clanItem && tabIndex !== 1 && (
+      {clanItem && tabIndex !== 1 && tabIndex !== 2 && (
         <div
           className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${navVisible ? "max-h-[300px]" : "max-h-0"}`}
         >
@@ -259,10 +245,8 @@ function GenealogyDetailContent() {
             className="bg-[#8B1A1A] relative overflow-hidden py-3.5"
             aria-hidden="false"
           >
-            {/* Top + bottom thick gold borders */}
             <div className="classical-decor absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
             <div className="classical-decor absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
-            {/* Inner thin lines */}
             <div className="classical-decor absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
             <div className="classical-decor absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
 
@@ -283,21 +267,10 @@ function GenealogyDetailContent() {
               style={{ height: "calc(100% - 8px)", width: "auto" }}
             />}
 
-            {/* Nav content — elevated above decorative elements */}
             <div className="relative z-10 flex items-center justify-between px-16">
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 border border-[#C8960C] flex items-center justify-center flex-shrink-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#C8960C"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8960C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -305,7 +278,7 @@ function GenealogyDetailContent() {
                   </svg>
                 </div>
                 <span className="text-[#C8960C] font-bold uppercase tracking-[0.25em] text-[13px] hidden sm:block">
-                  Gia Phả Việt
+                  {tCommon("appName")}
                 </span>
               </div>
 
@@ -329,7 +302,7 @@ function GenealogyDetailContent() {
                       <polyline points="16 17 21 12 16 7" />
                       <line x1="21" y1="12" x2="9" y2="12" />
                     </svg>
-                    <span className="hidden sm:inline">Đăng xuất</span>
+                    <span className="hidden sm:inline">{t("signOut")}</span>
                   </button>
                 ) : (
                   <button
@@ -341,12 +314,11 @@ function GenealogyDetailContent() {
                       <polyline points="10 17 15 12 10 7" />
                       <line x1="15" y1="12" x2="3" y2="12" />
                     </svg>
-                    <span className="hidden sm:inline">Đăng nhập</span>
+                    <span className="hidden sm:inline">{t("signIn")}</span>
                   </button>
                 )}
               </div>
             </div>
-            {/* end nav content wrapper */}
           </nav>
 
           {isClassical && (
@@ -364,7 +336,6 @@ function GenealogyDetailContent() {
         </div>
       )}
 
-      {/* ── CONTENT AREA ── */}
       <div
         ref={contentAreaRef}
         className="flex-1 overflow-hidden relative flex flex-col"
@@ -379,7 +350,7 @@ function GenealogyDetailContent() {
                 onScroll={handleContentScroll}
               />
             ) : (
-              <LoadingState message="Đang truy vấn dữ liệu dòng tộc..." />
+              <LoadingState message={t("loadingClan")} />
             )}
           </>
         )}
@@ -394,16 +365,22 @@ function GenealogyDetailContent() {
                 fetchDataDetail={fetchDataDetail}
               />
             ) : (
-              <LoadingState message="Đang khởi tạo sơ đồ phả hệ..." />
+              <LoadingState message={t("loadingDiagram")} />
             )}
           </>
         )}
         {tabIndex == 2 && (
-          <GenealogyStatisticsForm
-            clanItem={clanItem}
-            familyData={familyData}
-            setTabIndex={setTabIndex}
-          />
+          <>
+            {!loadingClanDialog ? (
+              <GenealogyStatisticsForm
+                clanItem={clanItem}
+                familyData={familyData}
+                setTabIndex={setTabIndex}
+              />
+            ) : (
+              <LoadingState message={t("loadingStats")} />
+            )}
+          </>
         )}
       </div>
 
@@ -420,80 +397,17 @@ function GenealogyDetailContent() {
 function LoadingState({ message }) {
   return (
     <div className="flex-1 min-h-screen flex flex-col items-center justify-center font-serif bg-[#F5EDD0]">
-      {/* Spinner rings */}
       <div className="relative w-20 h-20 mb-8">
-        {/* Outer ring — slow clockwise */}
-        <svg
-          className="absolute inset-0 w-full h-full animate-spin"
-          style={{ animationDuration: "3s" }}
-          viewBox="0 0 80 80"
-          aria-hidden="true"
-        >
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke="#C8960C"
-            strokeWidth="2"
-          />
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke="#C8960C"
-            strokeWidth="2.5"
-            strokeDasharray="85 141"
-            strokeLinecap="round"
-          />
+        <svg className="absolute inset-0 w-full h-full animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 80 80" aria-hidden="true">
+          <circle cx="40" cy="40" r="36" fill="none" stroke="#C8960C" strokeWidth="2" />
+          <circle cx="40" cy="40" r="36" fill="none" stroke="#C8960C" strokeWidth="2.5" strokeDasharray="85 141" strokeLinecap="round" />
         </svg>
-        {/* Middle ring — faster counter-clockwise */}
-        <svg
-          className="absolute animate-spin"
-          style={{
-            top: 12,
-            left: 12,
-            width: 56,
-            height: 56,
-            animationDuration: "1.8s",
-            animationDirection: "reverse",
-          }}
-          viewBox="0 0 56 56"
-          aria-hidden="true"
-        >
-          <circle
-            cx="28"
-            cy="28"
-            r="24"
-            fill="none"
-            stroke="#C8960C"
-            strokeWidth="1.5"
-          />
-          <circle
-            cx="28"
-            cy="28"
-            r="24"
-            fill="none"
-            stroke="#C8960C"
-            strokeWidth="2"
-            strokeDasharray="40 110"
-            strokeLinecap="round"
-          />
+        <svg className="absolute animate-spin" style={{ top: 12, left: 12, width: 56, height: 56, animationDuration: "1.8s", animationDirection: "reverse" }} viewBox="0 0 56 56" aria-hidden="true">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="#C8960C" strokeWidth="1.5" />
+          <circle cx="28" cy="28" r="24" fill="none" stroke="#C8960C" strokeWidth="2" strokeDasharray="40 110" strokeLinecap="round" />
         </svg>
-        {/* Center icon */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#8B1A1A"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B1A1A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -501,8 +415,6 @@ function LoadingState({ message }) {
           </svg>
         </div>
       </div>
-
-      {/* Message */}
       <p className="text-[#8B1A1A] text-sm font-serif uppercase tracking-[0.25em] text-center px-6 animate-pulse mb-2">
         {message}
       </p>
@@ -515,7 +427,7 @@ function LoadingState({ message }) {
 
 export default function GenealogyDetail() {
   return (
-    <Suspense fallback={<LoadingState message="Đang khởi động..." />}>
+    <Suspense fallback={<LoadingState message="Loading..." />}>
       <GenealogyDetailContent />
     </Suspense>
   );

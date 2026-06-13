@@ -11,7 +11,7 @@ import { GenealogyContext } from "@/context/GenealogyContext";
 import AddSpouseModal from "./AddSpouseModal";
 import AddChildModal from "./AddChildModal";
 import UpdateMemberModal from "./UpdateMemberModal";
-import AddExternalSpouseModal from "./AddExternalSpouseModal";
+import CrossClanLinkModal from "./CrossClanLinkModal";
 import { useSelector } from "react-redux";
 import sweetalert2 from "@/configs/swal";
 import Swal from "sweetalert2";
@@ -126,11 +126,12 @@ export default function DetailSidebar({
   const [activeTab, setActiveTab] = useState("info");
   const [modalAddChildState, setModalAddChildState] = useState(false);
   const [modalUpdateState, setModalUpdateState] = useState(false);
-  const [modalExternalSpouseOpen, setModalExternalSpouseOpen] = useState(false);
+  const [modalCrossLinkOpen, setModalCrossLinkOpen] = useState(false);
 
   const [personOrigin, setPersonOrigin] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
   const [removingExternalSpouseId, setRemovingExternalSpouseId] = useState(null);
+  const [removingEquivalentId, setRemovingEquivalentId] = useState(null);
 
   const userWalletAddress = useSelector(
     (state) => state.genealogyReducer.walletAddress,
@@ -140,7 +141,7 @@ export default function DetailSidebar({
 
   // console.log("userWalletAddress: ", userWalletAddress);
 
-  const { getOwner, removeChild, removeSpouse, getPersonDetail, removeExternalSpouse, getPersonOrigin, getEquivalents } =
+  const { getOwner, removeChild, removeSpouse, getPersonDetail, removeExternalSpouse, getPersonOrigin, getEquivalents, unlinkSamePerson } =
     useContext(GenealogyContext);
 
   const [owner, setOwner] = useState("0x");
@@ -230,6 +231,16 @@ export default function DetailSidebar({
       extSpouse.clanAddress, extSpouse.personId,
       () => { setRemovingExternalSpouseId(null); fetchDataDialog(); },
       (title, err) => { setRemovingExternalSpouseId(null); sweetalert2.popupAlert({ title, text: String(err) }); },
+    );
+  };
+
+  const handleUnlinkSamePerson = (eq) => {
+    setRemovingEquivalentId(eq.personId);
+    unlinkSamePerson(
+      userWalletAddress, clanItem?.clanId, person.id,
+      eq.clanAddress, eq.personId,
+      () => { setRemovingEquivalentId(null); fetchDataDialog(); },
+      (title, err) => { setRemovingEquivalentId(null); sweetalert2.popupAlert({ title, text: String(err) }); },
     );
   };
 
@@ -457,12 +468,12 @@ export default function DetailSidebar({
                     </>
                   )}
                   {!person.isSpouse && (
-                    <button onClick={() => { setModalExternalSpouseOpen(true); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
+                    <button onClick={() => { setModalCrossLinkOpen(true); setIsMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs font-semibold text-[#3d2611] hover:bg-[#fdf8e9] transition-colors flex items-center gap-2">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                         <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
                       </svg>
-                      Thêm phối ngẫu ngoài gia phả
+                      Liên kết xuyên gia phả
                     </button>
                   )}
                   <div className="bg-[#fdf8e9]/50 px-3 py-1 text-[10px] font-bold text-[#8b5a2b] uppercase border-y border-[#8b5a2b]/10">
@@ -527,9 +538,9 @@ export default function DetailSidebar({
           fetchDataDialog={fetchDataDialog}
         />
       )}
-      {modalExternalSpouseOpen && (
-        <AddExternalSpouseModal
-          onClose={() => setModalExternalSpouseOpen(false)}
+      {modalCrossLinkOpen && (
+        <CrossClanLinkModal
+          onClose={() => setModalCrossLinkOpen(false)}
           person={person}
           clanItem={clanItem}
           fetchDataDialog={fetchDataDialog}
@@ -709,6 +720,22 @@ export default function DetailSidebar({
                               {eq.personId?.slice(0, 8)}...{eq.personId?.slice(-4)}
                             </p>
                           </div>
+                          {owner === userWalletAddress && (
+                            <button
+                              onClick={() => handleUnlinkSamePerson(eq)}
+                              disabled={removingEquivalentId === eq.personId}
+                              className="text-[#8b5a2b]/40 hover:text-red-600 transition-colors flex-shrink-0 disabled:opacity-40"
+                              title="Hủy liên kết tương đương"
+                            >
+                              {removingEquivalentId === eq.personId ? (
+                                <div className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full" />
+                              ) : (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                              )}
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -57,10 +57,10 @@ const ClanListItem = ({ clanId }) => {
       <div className="absolute inset-0 bg-gradient-to-b from-[#100500]/35 to-transparent" />
 
       {/* Viền vàng trên đỉnh */}
-      <div className="relative z-10 h-[3px] bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000] flex-shrink-0" />
+      <div className="classical-decor relative z-10 h-[3px] bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000] flex-shrink-0" />
 
       {/* Họa tiết 4 góc */}
-      <DragonClawCorners size={36} color="#C8960C" />
+      <span className="classical-decor"><DragonClawCorners size={36} color="#C8960C" /></span>
 
       {/* Nội dung */}
       {loading ? (

@@ -1,0 +1,5 @@
+// Constants.sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+bytes32 constant ANCESTOR_TOKEN_ID = 0x0000000000000000000000000000000000000000000000000000000000000001;

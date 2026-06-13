@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const m = require\\('c:/PRJ/Giaphaviet/messages/vi.json'\\); console.log\\(JSON.stringify\\(m.DetailSidebar, null, 2\\)\\); console.log\\('---'\\); console.log\\(JSON.stringify\\(m.GenerationLabels, null, 2\\)\\);\")"
+    ]
+  }
+}

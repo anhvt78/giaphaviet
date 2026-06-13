@@ -221,10 +221,10 @@ export default function ConnectForm() {
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              <span className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-[#D4AF37]" />
-              <span className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-[#D4AF37]" />
-              <span className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-[#D4AF37]" />
-              <span className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-[#D4AF37]" />
+              <span className="classical-decor absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-[#D4AF37]" />
+              <span className="classical-decor absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-[#D4AF37]" />
+              <span className="classical-decor absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-[#D4AF37]" />
+              <span className="classical-decor absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-[#D4AF37]" />
             </div>
             <div className="flex flex-col">
               <span className="text-[#C8960C] font-bold uppercase tracking-[0.28em] text-[13px]">

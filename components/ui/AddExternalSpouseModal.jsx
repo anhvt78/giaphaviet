@@ -46,7 +46,7 @@ export default function AddExternalSpouseModal({ person, clanItem, onClose, fetc
         className="relative w-full max-w-md bg-[#FEFBF0] z-10"
         style={{ boxShadow: "0 24px 60px rgba(61,38,17,0.4), 0 0 0 1px rgba(139,26,26,0.2)" }}
       >
-        <div className="h-1.5 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
+        <div className="classical-decor h-1.5 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
 
         <div className="px-7 pt-6 pb-3 text-center border-b border-[#8B1A1A]/15 bg-[#F5EDD0]">
           <div className="w-11 h-11 mx-auto mb-3 bg-[#8B1A1A] flex items-center justify-center">
@@ -125,7 +125,7 @@ export default function AddExternalSpouseModal({ person, clanItem, onClose, fetc
           </div>
         </form>
 
-        <div className="h-1 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
+        <div className="classical-decor h-1 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
       </motion.div>
     </div>
   );

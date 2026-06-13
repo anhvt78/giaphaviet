@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 
 import images from "@/app/img";
 import modalBackground from "@/images/modal_background.png";
@@ -12,9 +12,6 @@ import {
   ImperialCard,
   ImperialSectionHeader as SectionHeader,
 } from "@/components/ui/imperial";
-import { GenealogyContext } from "@/context/GenealogyContext";
-import sweetalert2 from "@/configs/swal";
-
 const EditButton = ({ onClick, title, href }) => {
   const cls =
     "flex items-center justify-center w-6 h-6 border border-[#8B1A1A]/25 text-[#8B1A1A]/50 hover:text-[#8B1A1A] hover:border-[#8B1A1A]/50 hover:bg-[#8B1A1A]/5 transition-all flex-shrink-0";
@@ -62,33 +59,9 @@ export default function GenealogyDetailForm({
   const [modalUpdateState, setModalUpdateState] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Linked clans state
-  const [linkedClans, setLinkedClans] = useState([]);
-  const [linkedClansLoading, setLinkedClansLoading] = useState(false);
-  const [proposeInput, setProposeInput] = useState("");
-  const [proposeErr, setProposeErr] = useState(null);
-  const [isProposing, setIsProposing] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false);
-  const [removingClan, setRemovingClan] = useState(null);
-
-  const {
-    getLinkedClans,
-    proposeClanLink,
-    removeClanLink,
-    claimClanRegistration,
-  } = useContext(GenealogyContext);
   const userWalletAddress = useSelector(
     (state) => state.genealogyReducer.walletAddress,
   );
-
-  useEffect(() => {
-    if (!clanItem?.clanId) return;
-    setLinkedClansLoading(true);
-    getLinkedClans(clanItem.clanId).then((res) => {
-      setLinkedClansLoading(false);
-      if (res.sts) setLinkedClans(res.data || []);
-    });
-  }, [clanItem?.clanId]);
 
   const bannerSrc =
     typeof images.banner === "string" ? images.banner : images.banner?.src;
@@ -117,75 +90,6 @@ export default function GenealogyDetailForm({
 
   const isOwner =
     userWalletAddress && clanItem?.clanOwner === userWalletAddress;
-
-  const handleProposeClanLink = () => {
-    const addr = proposeInput.trim();
-    if (!addr.startsWith("0x") || addr.length !== 42) {
-      setProposeErr("Địa chỉ không hợp lệ (phải là 0x... 42 ký tự)");
-      return;
-    }
-    if (addr.toLowerCase() === clanItem?.clanId?.toLowerCase()) {
-      setProposeErr("Không thể liên kết với chính gia phả này");
-      return;
-    }
-    setProposeErr(null);
-    setIsProposing(true);
-    proposeClanLink(
-      userWalletAddress,
-      clanItem.clanId,
-      addr,
-      () => {
-        setIsProposing(false);
-        setProposeInput("");
-        sweetalert2.popupAlert({
-          title: "Thành công",
-          text: "Đã gửi đề xuất liên kết gia phả.",
-        });
-      },
-      (title, err) => {
-        setIsProposing(false);
-        sweetalert2.popupAlert({ title, text: String(err) });
-      },
-    );
-  };
-
-  const handleRemoveClanLink = (otherClan) => {
-    setRemovingClan(otherClan);
-    removeClanLink(
-      userWalletAddress,
-      clanItem.clanId,
-      otherClan,
-      () => {
-        setRemovingClan(null);
-        setLinkedClans((prev) =>
-          prev.filter((c) => c.toLowerCase() !== otherClan.toLowerCase()),
-        );
-      },
-      (title, err) => {
-        setRemovingClan(null);
-        sweetalert2.popupAlert({ title, text: String(err) });
-      },
-    );
-  };
-
-  const handleClaimRegistration = () => {
-    setIsClaiming(true);
-    claimClanRegistration(
-      userWalletAddress,
-      clanItem.clanId,
-      () => {
-        setIsClaiming(false);
-        sweetalert2.popupAlert({
-          title: "Thành công",
-          text: "Đã xác nhận quyền sở hữu gia phả trên blockchain.",
-        });
-      },
-      (title, err) => {
-        setIsClaiming(false);
-        sweetalert2.popupAlert({ title, text: String(err) });
-      },
-    );
-  };
 
   return (
     <div
@@ -347,180 +251,6 @@ export default function GenealogyDetailForm({
             </section>
           )}
 
-          {/* Section IV — Gia phả liên kết */}
-          <section>
-            <SectionHeader numeral="IV" title="Gia phả liên kết" />
-
-            {/* Linked clans list */}
-            {linkedClansLoading ? (
-              <div className="flex items-center gap-2 py-4 pl-3">
-                <div className="animate-spin h-4 w-4 border-2 border-[#8B1A1A]/20 border-t-[#8B1A1A] rounded-full" />
-                <span className="text-[12px] text-[#8B1A1A]/50 italic">
-                  Đang tải danh sách liên kết...
-                </span>
-              </div>
-            ) : linkedClans.length === 0 ? (
-              <p className="text-[#8B1A1A]/40 italic text-sm pl-3 border-l-2 border-[#C8960C]/20 py-1">
-                Chưa có gia phả nào được liên kết.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {linkedClans.map((addr) => (
-                  <div
-                    key={addr}
-                    className="flex items-center gap-2 bg-white border border-[#8B1A1A]/20 px-3 py-2.5"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#C8960C"
-                      strokeWidth="2"
-                      className="flex-shrink-0"
-                    >
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                    </svg>
-                    <span className="text-[11px] font-mono text-[#3d2611] flex-1 truncate">
-                      {addr.slice(0, 10)}...{addr.slice(-6)}
-                    </span>
-                    <a
-                      href={`https://explorer.execution.mainnet.lukso.network/address/${addr}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#8B1A1A]/40 hover:text-[#8B1A1A] transition-colors flex-shrink-0"
-                      title="Xem trên Explorer"
-                    >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
-                    </a>
-                    {isOwner && (
-                      <button
-                        onClick={() => handleRemoveClanLink(addr)}
-                        disabled={removingClan === addr}
-                        className="text-[#8B1A1A]/40 hover:text-red-600 transition-colors flex-shrink-0 disabled:opacity-40"
-                        title="Xóa liên kết"
-                      >
-                        {removingClan === addr ? (
-                          <div className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full" />
-                        ) : (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14H6L5 6" />
-                            <path d="M10 11v6M14 11v6" />
-                            <path d="M9 6V4h6v2" />
-                          </svg>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Propose link form — owner only */}
-            {isOwner && (
-              <div className="mt-5 border border-[#8B1A1A]/15 bg-[#FEFBF0] p-4 space-y-3">
-                <p className="text-[10px] font-bold text-[#8B1A1A]/60 uppercase tracking-widest">
-                  Đề xuất liên kết mới
-                </p>
-                <div>
-                  <input
-                    type="text"
-                    value={proposeInput}
-                    onChange={(e) => {
-                      setProposeInput(e.target.value);
-                      setProposeErr(null);
-                    }}
-                    disabled={isProposing}
-                    placeholder="0x... (địa chỉ contract FamilyNFT của gia phả kia)"
-                    className="w-full bg-white border border-[#8B1A1A]/30 hover:border-[#8B1A1A]/60 focus:border-[#8B1A1A] px-3 py-2.5 outline-none text-[11px] text-[#8B1A1A] font-mono placeholder:text-[#8B1A1A]/30 disabled:opacity-50"
-                  />
-                  {proposeErr && (
-                    <p className="text-red-600 text-[10px] mt-1 font-bold">
-                      * {proposeErr}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-start gap-2 bg-[#F5EDD0] border border-[#8B1A1A]/10 px-3 py-2">
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#C8960C"
-                    strokeWidth="2"
-                    className="mt-0.5 flex-shrink-0"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4M12 8h.01" />
-                  </svg>
-                  <p className="text-[10px] text-[#8B1A1A]/55 leading-relaxed">
-                    Liên kết hai chiều yêu cầu cả hai bên chủ gia phả đồng ý đề
-                    xuất. Đề xuất sẽ có hiệu lực khi gia phả kia cũng xác nhận.
-                  </p>
-                </div>
-                <button
-                  onClick={handleProposeClanLink}
-                  disabled={isProposing || !proposeInput.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#8B1A1A] text-[#C8960C] font-bold text-[11px] uppercase tracking-wider hover:bg-[#6B0000] transition-all disabled:opacity-50"
-                >
-                  {isProposing && (
-                    <div className="animate-spin h-3 w-3 border-2 border-[#C8960C]/30 border-t-[#C8960C] rounded-full" />
-                  )}
-                  {isProposing ? "Đang gửi..." : "Gửi đề xuất liên kết"}
-                </button>
-              </div>
-            )}
-
-            {/* Claim registration — owner only */}
-            {isOwner && (
-              <div className="mt-4">
-                <button
-                  onClick={handleClaimRegistration}
-                  disabled={isClaiming}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#8B1A1A]/30 text-[#8B1A1A] font-bold text-[11px] uppercase tracking-wider hover:bg-[#8B1A1A]/5 hover:border-[#8B1A1A]/60 transition-all disabled:opacity-50"
-                >
-                  {isClaiming && (
-                    <div className="animate-spin h-3 w-3 border-2 border-[#8B1A1A]/20 border-t-[#8B1A1A] rounded-full" />
-                  )}
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  {isClaiming ? "Đang xác nhận..." : "Xác nhận đăng ký gia phả"}
-                </button>
-                <p className="text-[10px] text-[#8B1A1A]/40 mt-1.5 text-center leading-relaxed">
-                  Dùng khi bạn đã nhận token tổ tiên nhưng chưa đăng ký trên
-                  Genealogy
-                </p>
-              </div>
-            )}
-          </section>
         </div>
 
         {/* ── RIGHT SIDEBAR ── */}
@@ -554,10 +284,10 @@ export default function GenealogyDetailForm({
                 onClick={() => setTabIndex(1)}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-[#8B1A1A] text-[#C8960C] font-bold text-[11px] uppercase tracking-wider hover:bg-[#6B0000] active:scale-[0.99] transition-all relative overflow-hidden"
               >
-                <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#D4AF37]/60" />
-                <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#D4AF37]/60" />
-                <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#D4AF37]/60" />
-                <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#D4AF37]/60" />
+                <span className="classical-decor absolute top-0 left-0 w-2 h-2 border-t border-l border-[#D4AF37]/60" />
+                <span className="classical-decor absolute top-0 right-0 w-2 h-2 border-t border-r border-[#D4AF37]/60" />
+                <span className="classical-decor absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#D4AF37]/60" />
+                <span className="classical-decor absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#D4AF37]/60" />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="15"

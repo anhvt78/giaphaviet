@@ -717,6 +717,42 @@ export const GenealogyProvider = ({ children }) => {
     }
   };
 
+  const getPersonsFromClan = async (clanId) => {
+    try {
+      const contract = connectReadOnlyContract(clanId, familyNftABI);
+      const count = Number(await contract.read.personCount());
+      if (count === 0) return { sts: true, data: [] };
+
+      const publicClient = createPublicClient({ chain: lukso, transport: http(RPC_URL) });
+      const calls = Array.from({ length: count }, (_, i) => ({
+        address: clanId,
+        abi: familyNftABI,
+        functionName: "getPersonInfo",
+        args: [`0x${(i + 1).toString(16).padStart(64, "0")}`],
+      }));
+      const results = await publicClient.multicall({ contracts: calls });
+
+      const persons = results
+        .map((res, i) => {
+          if (res.status !== "success") return null;
+          const p = res.result;
+          return {
+            id: `0x${(i + 1).toString(16).padStart(64, "0")}`,
+            name: p.name,
+            gender: p.sex === 0 ? "male" : p.sex === 1 ? "female" : "unknown",
+            birthDate: p.birthDate,
+            isDeceased: p.isDeceased,
+            shortDesc: p.shortDesc,
+          };
+        })
+        .filter((p) => p && p.name);
+
+      return { sts: true, data: persons };
+    } catch (error) {
+      return { sts: false, data: error };
+    }
+  };
+
   const personExists = async (clanId, personId) => {
     try {
       const contract = connectReadOnlyContract(clanId, familyNftABI);
@@ -1013,6 +1049,7 @@ export const GenealogyProvider = ({ children }) => {
         importPerson,
         linkSamePerson,
         unlinkSamePerson,
+        getPersonsFromClan,
         personExists,
         getPersonOrigin,
         getEquivalents,

@@ -1,6 +1,8 @@
 "use client";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/context/ThemeContext";
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { setWalletAddress } from "@/redux/genealogySlide";
@@ -13,6 +15,7 @@ import loaderAnimation from "../assets/animations/loader.json";
 export default function ClanListForm({ userWalletAddress }) {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { isClassical } = useTheme();
   const { getNFTCollection, createClan } = useContext(GenealogyContext);
   const [isLoading, setIsLoading] = useState(true);
   const [allClanId, setAllClanId] = useState([]);
@@ -209,28 +212,28 @@ export default function ClanListForm({ userWalletAddress }) {
           aria-hidden="false"
         >
           {/* Top + bottom thick gold borders */}
-          <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
-          <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          <div className="classical-decor absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
+          <div className="classical-decor absolute bottom-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#D4AF37] via-[#C8960C] to-[#D4AF37]" />
           {/* Inner thin lines */}
-          <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
-          <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+          <div className="classical-decor absolute top-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
+          <div className="classical-decor absolute bottom-[6px] left-0 right-0 h-[1px] bg-[#D4AF37] opacity-40" />
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          {isClassical && <img
             src="/hoa_tiet_sen_vang.svg"
             alt=""
             aria-hidden="true"
             className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ height: "calc(100% - 8px)", width: "auto" }}
-          />
+          />}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          {isClassical && <img
             src="/hoa_tiet_cay_tre.svg"
             alt=""
             aria-hidden="true"
             className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ height: "calc(100% - 8px)", width: "auto" }}
-          />
+          />}
 
           {/* Nav content — elevated above decorative elements */}
           <div className="relative z-10 flex items-center justify-between px-16">
@@ -259,6 +262,7 @@ export default function ClanListForm({ userWalletAddress }) {
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeSwitcher compact />
               {shortAddress && (
                 <div className="flex items-center gap-2 bg-[#6B0000]/60 border border-[#C8960C]/30 px-3 py-1.5 rounded-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -293,16 +297,18 @@ export default function ClanListForm({ userWalletAddress }) {
           {/* end nav content wrapper */}
         </nav>
 
-        <div
-          aria-hidden="true"
-          className="w-full flex-shrink-0"
-          style={{
-            height: 15,
-            backgroundImage: "url(/hoa_tiet_vien_ngang.svg)",
-            backgroundRepeat: "repeat-x",
-            backgroundSize: "auto 15px",
-          }}
-        />
+        {isClassical && (
+          <div
+            aria-hidden="true"
+            className="w-full flex-shrink-0"
+            style={{
+              height: 15,
+              backgroundImage: "url(/hoa_tiet_vien_ngang.svg)",
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 15px",
+            }}
+          />
+        )}
       </div>
 
       {/* ── MAIN CONTENT ── */}
@@ -508,7 +514,7 @@ export default function ClanListForm({ userWalletAddress }) {
               }}
             >
               {/* Top accent bar */}
-              <div className="h-1.5 flex-shrink-0 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
+              <div className="classical-decor h-1.5 flex-shrink-0 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
 
               {/* ── HEADER ── */}
               <div className="relative px-8 pt-7 pb-6 text-center border-b border-[#8B1A1A]/20 bg-[#F5EDD0]">
@@ -805,7 +811,7 @@ export default function ClanListForm({ userWalletAddress }) {
               </form>
 
               {/* Bottom accent bar */}
-              <div className="h-1 flex-shrink-0 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
+              <div className="classical-decor h-1 flex-shrink-0 bg-gradient-to-r from-[#6B0000] via-[#C8960C] to-[#6B0000]" />
             </motion.div>
           </div>
         )}
